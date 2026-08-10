@@ -188,12 +188,6 @@ metadata:
   labels:
     app: expense-tracker
     managed-by: portainer-run
-  annotations:
-    portainer-run/deploy-type: vibe
-    portainer-run/git-target-id: 85229a2d-179d-4558-a483-fa670a5a21ec
-    portainer-run/git-branch: main
-    portainer-run/git-path: local/default/expense-tracker.yaml
-    portainer-run/vibe-source-path: local/default/expense-tracker/src
 spec:
   type: ClusterIP
   selector:
@@ -211,15 +205,9 @@ metadata:
   labels:
     app: expense-tracker
     managed-by: portainer-run
-  annotations:
-    portainer-run/deploy-type: vibe
-    portainer-run/git-target-id: 85229a2d-179d-4558-a483-fa670a5a21ec
-    portainer-run/git-branch: main
-    portainer-run/git-path: local/default/expense-tracker.yaml
-    portainer-run/vibe-source-path: local/default/expense-tracker/src
 spec:
   rules:
-    - host: app.sample.com
+    - host: localhost
       http:
         paths:
           - path: /
