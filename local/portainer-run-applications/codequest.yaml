@@ -50,12 +50,12 @@ spec:
       automountServiceAccountToken: false
       initContainers:
         - name: vibe-sync
-          image: alpine/git:latest
+          image: alpine/git:2.45.2
           command:
             - sh
             - '-c'
             - >-
-              git config --global http.sslVerify false && git clone --depth 1 --branch main
+              git clone --depth 1 --branch main
               https://${GIT_USERNAME}:${GIT_TOKEN}@github.com/heyronmar/portainer-public-deployments /tmp/repo && mkdir
               -p /usr/share/nginx/html && cp -r /tmp/repo/local/portainer-run-applications/codequest/src/.
               /usr/share/nginx/html/ && rm -rf /tmp/repo
@@ -82,6 +82,8 @@ spec:
                   key: token
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
             capabilities:
               drop:
                 - ALL
@@ -89,7 +91,7 @@ spec:
               type: RuntimeDefault
       containers:
         - name: codequest
-          image: nginxinc/nginx-unprivileged:alpine
+          image: nginxinc/nginx-unprivileged:1.27-alpine
           command:
             - sh
             - '-c'
@@ -110,6 +112,8 @@ spec:
               memory: 4Gi
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
             capabilities:
               drop:
                 - ALL
@@ -160,6 +164,10 @@ metadata:
     kubernetes.io/ingress.class: traefik
 spec:
   ingressClassName: traefik
+  tls:
+    - hosts:
+        - codequest.ronmarlacamiento.com
+      secretName: codequest-tls
   rules:
     - host: codequest.ronmarlacamiento.com
       http:
