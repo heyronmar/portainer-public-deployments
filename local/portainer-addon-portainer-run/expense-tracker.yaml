@@ -1,0 +1,179 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: expense-tracker-data
+  namespace: portainer-addon-portainer-run
+  labels:
+    app: expense-tracker
+    managed-by: portainer-run
+  annotations:
+    portainer-run/deploy-type: vibe
+    portainer-run/git-target-id: 901eacf6-39f4-4de4-9d4a-9329db630a19
+    portainer-run/git-branch: main
+    portainer-run/git-path: local/portainer-addon-portainer-run/expense-tracker.yaml
+    portainer-run/vibe-source-path: local/portainer-run-applications/expense-tracker
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: expense-tracker
+  namespace: portainer-addon-portainer-run
+  labels:
+    app: expense-tracker
+    managed-by: portainer-run
+  annotations:
+    portainer-run/deploy-type: vibe
+    portainer-run/git-target-id: 901eacf6-39f4-4de4-9d4a-9329db630a19
+    portainer-run/git-branch: main
+    portainer-run/git-path: local/portainer-addon-portainer-run/expense-tracker.yaml
+    portainer-run/vibe-source-path: local/portainer-run-applications/expense-tracker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: expense-tracker
+  template:
+    metadata:
+      labels:
+        app: expense-tracker
+        managed-by: portainer-run
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      automountServiceAccountToken: false
+      initContainers:
+        - name: vibe-sync
+          image: alpine/git:2.45.2
+          command:
+            - sh
+            - '-c'
+            - >-
+              git clone --depth 1 --branch main
+              https://${GIT_USERNAME}:${GIT_TOKEN}@github.com/heyronmar/portainer-public-deployments /tmp/repo && mkdir
+              -p /usr/share/nginx/html && cp -r /tmp/repo/local/portainer-run-applications/expense-tracker/.
+              /usr/share/nginx/html/ && rm -rf /tmp/repo
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 512Mi
+          volumeMounts:
+            - name: app-data
+              mountPath: /usr/share/nginx/html
+          env:
+            - name: GIT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: expense-tracker-git-credentials
+                  key: username
+            - name: GIT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: expense-tracker-git-credentials
+                  key: token
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+      containers:
+        - name: expense-tracker
+          image: nginxinc/nginx-unprivileged:1.27-alpine
+          command:
+            - sh
+            - '-c'
+            - nginx -g 'daemon off;'
+          workingDir: /usr/share/nginx/html
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - name: app-data
+              mountPath: /usr/share/nginx/html
+          resources:
+            requests:
+              cpu: 100m
+              memory: 1Gi
+            limits:
+              cpu: '1'
+              memory: 4Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+      volumes:
+        - name: app-data
+          persistentVolumeClaim:
+            claimName: expense-tracker-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: expense-tracker
+  namespace: portainer-addon-portainer-run
+  labels:
+    app: expense-tracker
+    managed-by: portainer-run
+  annotations:
+    portainer-run/deploy-type: vibe
+    portainer-run/git-target-id: 901eacf6-39f4-4de4-9d4a-9329db630a19
+    portainer-run/git-branch: main
+    portainer-run/git-path: local/portainer-addon-portainer-run/expense-tracker.yaml
+    portainer-run/vibe-source-path: local/portainer-run-applications/expense-tracker
+spec:
+  type: ClusterIP
+  selector:
+    app: expense-tracker
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: expense-tracker
+  namespace: portainer-addon-portainer-run
+  labels:
+    app: expense-tracker
+    managed-by: portainer-run
+  annotations:
+    portainer-run/deploy-type: vibe
+    portainer-run/git-target-id: 901eacf6-39f4-4de4-9d4a-9329db630a19
+    portainer-run/git-branch: main
+    portainer-run/git-path: local/portainer-addon-portainer-run/expense-tracker.yaml
+    portainer-run/vibe-source-path: local/portainer-run-applications/expense-tracker
+spec:
+  tls:
+    - hosts:
+        - expense-tracker.ronmarlacamiento.com
+      secretName: expense-tracker-tls
+  rules:
+    - host: expense-tracker.ronmarlacamiento.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: expense-tracker
+                port:
+                  number: 8080
