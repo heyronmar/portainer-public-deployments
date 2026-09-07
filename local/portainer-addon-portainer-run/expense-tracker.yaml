@@ -50,12 +50,12 @@ spec:
       automountServiceAccountToken: false
       initContainers:
         - name: vibe-sync
-          image: alpine/git:latest
+          image: alpine/git:2.45.2
           command:
             - sh
             - '-c'
             - >-
-              git config --global http.sslVerify false && git clone --depth 1 --branch main
+              git clone --depth 1 --branch main
               https://${GIT_USERNAME}:${GIT_TOKEN}@github.com/heyronmar/portainer-public-deployments /tmp/repo && mkdir
               -p /usr/share/nginx/html && cp -r /tmp/repo/local/portainer-run-applications/expense-tracker/.
               /usr/share/nginx/html/ && rm -rf /tmp/repo
@@ -82,6 +82,8 @@ spec:
                   key: token
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
             capabilities:
               drop:
                 - ALL
@@ -89,7 +91,7 @@ spec:
               type: RuntimeDefault
       containers:
         - name: expense-tracker
-          image: nginxinc/nginx-unprivileged:alpine
+          image: nginxinc/nginx-unprivileged:1.27-alpine
           command:
             - sh
             - '-c'
@@ -110,6 +112,8 @@ spec:
               memory: 4Gi
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
             capabilities:
               drop:
                 - ALL
@@ -158,6 +162,10 @@ metadata:
     portainer-run/git-path: local/portainer-addon-portainer-run/expense-tracker.yaml
     portainer-run/vibe-source-path: local/portainer-run-applications/expense-tracker
 spec:
+  tls:
+    - hosts:
+        - expense-tracker.ronmarlacamiento.com
+      secretName: expense-tracker-tls
   rules:
     - host: expense-tracker.ronmarlacamiento.com
       http:

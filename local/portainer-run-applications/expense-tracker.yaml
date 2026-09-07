@@ -50,12 +50,12 @@ spec:
       automountServiceAccountToken: false
       initContainers:
         - name: vibe-sync
-          image: alpine/git:latest
+          image: alpine/git:2.45.2
           command:
             - sh
             - '-c'
             - >-
-              git config --global http.sslVerify false && git clone --depth 1 --branch main
+              git clone --depth 1 --branch main
               https://${GIT_USERNAME}:${GIT_TOKEN}@github.com/heyronmar/portainer-public-deployments /tmp/repo && mkdir
               -p /app && cp -r /tmp/repo/local/portainer-run-applications/expense-tracker/src/. /app/ && rm -rf
               /tmp/repo
@@ -82,13 +82,15 @@ spec:
                   key: token
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
             capabilities:
               drop:
                 - ALL
             seccompProfile:
               type: RuntimeDefault
         - name: vibe-install
-          image: node:22
+          image: node:22-alpine
           command:
             - sh
             - '-c'
@@ -143,7 +145,7 @@ spec:
               type: RuntimeDefault
       containers:
         - name: expense-tracker
-          image: node:22
+          image: node:22-alpine
           command:
             - sh
             - '-c'
@@ -171,6 +173,8 @@ spec:
               value: NZD
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
             capabilities:
               drop:
                 - ALL
@@ -221,6 +225,10 @@ metadata:
     kubernetes.io/ingress.class: traefik
 spec:
   ingressClassName: traefik
+  tls:
+    - hosts:
+        - expense-tracker.ronmarlacamiento.com
+      secretName: expense-tracker-tls
   rules:
     - host: expense-tracker.ronmarlacamiento.com
       http:
