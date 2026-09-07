@@ -82,8 +82,6 @@ spec:
                   key: token
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false
-            runAsNonRoot: true
             capabilities:
               drop:
                 - ALL
