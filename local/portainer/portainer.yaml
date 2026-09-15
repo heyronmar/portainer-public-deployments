@@ -1,0 +1,159 @@
+# ─────────────────────────────────────────────
+# Namespace
+# ─────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: portainer
+---
+# ─────────────────────────────────────────────
+# ServiceAccount + ClusterRoleBinding
+# Portainer manages the cluster via the Kubernetes API,
+# so it needs cluster-admin on its own service account.
+# ─────────────────────────────────────────────
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: portainer-sa-clusteradmin
+  namespace: portainer
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: portainer-crb-clusteradmin
+subjects:
+  - kind: ServiceAccount
+    name: portainer-sa-clusteradmin
+    namespace: portainer
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+# ─────────────────────────────────────────────
+# Data PVC
+# ─────────────────────────────────────────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: portainer-data
+  namespace: portainer
+  labels:
+    app: portainer
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 4Gi
+---
+# ─────────────────────────────────────────────
+# Portainer EE Deployment
+# ─────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portainer
+  namespace: portainer
+  labels:
+    app: portainer
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: portainer
+  template:
+    metadata:
+      labels:
+        app: portainer
+    spec:
+      serviceAccountName: portainer-sa-clusteradmin
+      automountServiceAccountToken: true
+      containers:
+        - name: portainer
+          image: portainer/portainer-ee:2.45.0
+          ports:
+            - name: https
+              containerPort: 9443
+              protocol: TCP
+            - name: edge
+              containerPort: 8000
+              protocol: TCP
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: portainer-data
+---
+# ─────────────────────────────────────────────
+# Service
+# ─────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: portainer
+  namespace: portainer
+  labels:
+    app: portainer
+spec:
+  type: ClusterIP
+  selector:
+    app: portainer
+  ports:
+    - name: https
+      port: 9443
+      targetPort: 9443
+      protocol: TCP
+    - name: edge
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+---
+# ─────────────────────────────────────────────
+# Ingress (web UI / API)
+# ─────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: portainer
+  namespace: portainer
+  labels:
+    app: portainer
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/service.serversscheme: https
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - portainer.ronmarlacamiento.com
+      secretName: portainer-tls
+  rules:
+    - host: portainer.ronmarlacamiento.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: portainer
+                port:
+                  number: 9443
