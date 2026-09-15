@@ -1,0 +1,936 @@
+<title>Portainer Setup Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #09090b;
+    --muted: #f4f4f5;
+    --muted-fg: #71717a;
+    --border: #e4e4e7;
+    --primary: #18181b;
+    --primary-fg: #ffffff;
+    --warn: #d97706;
+    --warn-bg: #fffbeb;
+    --warn-border: #fde68a;
+    --good: #16a34a;
+    --good-bg: #f0fdf4;
+    --good-border: #bbf7d0;
+    --code-bg: #18181b;
+    --code-fg: #f4f4f5;
+    --code-muted: #a1a1aa;
+    --radius: 8px;
+    --shadow: 0 1px 2px rgba(0,0,0,0.04), 0 1px 8px rgba(0,0,0,0.04);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #09090b;
+      --fg: #fafafa;
+      --muted: #18181b;
+      --muted-fg: #a1a1aa;
+      --border: #27272a;
+      --primary: #fafafa;
+      --primary-fg: #09090b;
+      --warn: #fbbf24;
+      --warn-bg: #271d06;
+      --warn-border: #4d3a0a;
+      --good: #4ade80;
+      --good-bg: #052e12;
+      --good-border: #14532d;
+      --code-bg: #000000;
+      --code-fg: #f4f4f5;
+      --code-muted: #71717a;
+      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 1px 8px rgba(0,0,0,0.3);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #09090b;
+    --fg: #fafafa;
+    --muted: #18181b;
+    --muted-fg: #a1a1aa;
+    --border: #27272a;
+    --primary: #fafafa;
+    --primary-fg: #09090b;
+    --warn: #fbbf24;
+    --warn-bg: #271d06;
+    --warn-border: #4d3a0a;
+    --good: #4ade80;
+    --good-bg: #052e12;
+    --good-border: #14532d;
+    --code-bg: #000000;
+    --code-fg: #f4f4f5;
+    --code-muted: #71717a;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 1px 8px rgba(0,0,0,0.3);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    margin: 0;
+    padding: 0 20px 96px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3 { font-family: "Inter", sans-serif; text-wrap: balance; }
+
+  a { color: var(--fg); text-underline-offset: 3px; text-decoration-color: var(--border); }
+  a:hover { text-decoration-color: var(--fg); }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+
+  code { font-variant-ligatures: none; }
+
+  /* ---------- Mobile-first layout ---------- */
+  .layout { max-width: 1160px; margin: 0 auto; }
+
+  .sidenav { padding-top: 32px; padding-bottom: 14px; }
+  .sidenav-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding-bottom: 14px;
+    margin-bottom: 10px;
+  }
+  .sidenav-brand .name { font-weight: 600; font-size: 14px; }
+  .sidenav-brand .sub { font-size: 12px; color: var(--muted-fg); }
+
+  .sidenav-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted-fg);
+    margin: 0 0 6px;
+  }
+  .sidenav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .sidenav-list a {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    white-space: nowrap;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--muted-fg);
+    text-decoration: none;
+    font-size: 13px;
+  }
+  .sidenav-list a .num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--muted-fg);
+  }
+  .sidenav-list a:hover { color: var(--fg); border-color: var(--fg); }
+  .sidenav-list a.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--primary-fg);
+  }
+  .sidenav-list a.active .num { color: var(--primary-fg); opacity: 0.7; }
+
+  .sidenav-foot { display: none; }
+
+  .content { min-width: 0; padding-top: 20px; }
+  .content-inner { max-width: 680px; }
+
+  /* ---------- Wide screens: fixed left rail, content scrolls independently ---------- */
+  @media (min-width: 720px) {
+    html, body { overflow: hidden; }
+    body { padding: 0; }
+
+    .layout { max-width: none; margin: 0; height: 100vh; }
+
+    .sidenav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 240px;
+      padding: 28px 16px 24px;
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+      background: var(--bg);
+      scrollbar-width: thin;
+    }
+    .sidenav-brand { padding: 0 8px 16px; margin-bottom: 8px; border-bottom: 1px solid var(--border); }
+
+    .sidenav-eyebrow { padding: 0 8px; }
+    .sidenav-list {
+      display: flex;
+      flex-direction: column;
+      overflow: visible;
+      padding-bottom: 0;
+      gap: 1px;
+    }
+    .sidenav-list a {
+      display: flex;
+      border: none;
+      border-radius: var(--radius);
+      padding: 7px 8px;
+      font-size: 13.5px;
+    }
+    .sidenav-list a:hover { background: var(--muted); border-color: transparent; color: var(--fg); }
+    .sidenav-list a.active { background: var(--muted); color: var(--fg); font-weight: 500; }
+    .sidenav-list a.active .num { color: var(--muted-fg); opacity: 1; }
+
+    .sidenav-foot {
+      display: block;
+      font-size: 12px;
+      color: var(--muted-fg);
+      padding: 14px 8px 0;
+      margin-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .sidenav-foot a { color: var(--muted-fg); }
+
+    .content {
+      margin-left: 240px;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 48px 56px 96px;
+    }
+  }
+
+  /* ---------- Masthead ---------- */
+  .masthead { padding-bottom: 24px; border-bottom: 1px solid var(--border); scroll-margin-top: 20px; }
+  .eyebrow {
+    font-size: 12.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted-fg);
+  }
+  .masthead h1 {
+    font-weight: 700;
+    font-size: clamp(1.7rem, 4vw, 2.15rem);
+    line-height: 1.2;
+    margin: 6px 0 10px;
+    letter-spacing: -0.01em;
+  }
+  .masthead .dek { color: var(--muted-fg); font-size: 15.5px; max-width: 60ch; }
+
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 12px;
+    color: var(--muted-fg);
+  }
+  .badge b { color: var(--fg); font-weight: 500; }
+
+  /* ---------- Prerequisites ---------- */
+  .prereqs {
+    margin-top: 22px;
+    padding: 14px 16px;
+    background: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .prereqs h2 {
+    font-size: 12.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    color: var(--muted-fg);
+    margin: 0 0 10px;
+  }
+  .prereqs ul { margin: 0; padding-left: 1.15em; }
+  .prereqs li { margin: 4px 0; }
+  .prereqs code { font-size: 0.9em; }
+
+  /* ---------- Stages ---------- */
+  .stage { margin-top: 52px; scroll-margin-top: 20px; }
+  .stage-head { display: flex; align-items: center; gap: 12px; }
+  .stage-badge {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: var(--muted);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted-fg);
+  }
+  .stage-head h2 { font-weight: 600; font-size: clamp(1.2rem, 3vw, 1.45rem); margin: 0; }
+
+  .stage-intro { margin-top: 14px; max-width: 62ch; }
+  .stage-intro p { margin: 0 0 12px; color: var(--fg); }
+  .stage-intro b { color: var(--fg); }
+
+  .step {
+    margin-top: 22px;
+    padding: 16px 18px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+  }
+  .step-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin: 0 0 8px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .step-title .step-tag {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--muted-fg);
+    background: var(--muted);
+    border-radius: 4px;
+    padding: 1px 6px;
+  }
+  .step p { margin: 0 0 10px; max-width: 62ch; color: var(--fg); }
+  .step p:last-of-type { margin-bottom: 0; }
+  .step ul { margin: 0; padding-left: 1.2em; color: var(--fg); }
+  .step li { margin: 4px 0; }
+  .step li b, .step p b { color: var(--fg); }
+
+  /* ---------- Code blocks ---------- */
+  .code { position: relative; margin: 12px 0; background: var(--code-bg); border-radius: var(--radius); overflow: hidden; }
+  .code-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 12px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--code-muted);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .copy-btn {
+    font-family: "Inter", sans-serif;
+    font-size: 11.5px;
+    color: var(--code-muted);
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 5px;
+    padding: 3px 9px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .copy-btn:hover { color: var(--code-fg); border-color: rgba(255,255,255,0.35); }
+  @media (prefers-reduced-motion: reduce) { .copy-btn { transition: none; } }
+
+  pre { margin: 0; padding: 14px 16px 16px; overflow-x: auto; }
+  pre, code { font-family: "JetBrains Mono", monospace; font-size: 12.5px; line-height: 1.6; }
+  pre code { color: var(--code-fg); background: none; white-space: pre; }
+  .cm { color: var(--code-muted); }
+
+  :not(pre) > code {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.87em;
+    background: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.1em 0.4em;
+  }
+
+  /* ---------- Callouts ---------- */
+  .callout {
+    margin: 16px 0;
+    padding: 12px 14px;
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
+    border-left: 3px solid var(--warn);
+    border-radius: var(--radius);
+  }
+  .callout-label {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--warn);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .callout-label svg { flex: none; }
+  .callout p { margin: 0 0 8px; color: var(--fg); }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout code { background: rgba(255,255,255,0.5); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .callout code { background: rgba(0,0,0,0.3); } }
+  :root[data-theme="dark"] .callout code { background: rgba(0,0,0,0.3); }
+
+  .result {
+    margin: 12px 0;
+    padding: 10px 14px;
+    background: var(--good-bg);
+    border: 1px solid var(--good-border);
+    border-left: 3px solid var(--good);
+    border-radius: var(--radius);
+    font-size: 13.5px;
+  }
+  .result b {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--good);
+    margin-bottom: 4px;
+  }
+  .result code { background: var(--bg); }
+
+  .filename { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--muted-fg); margin: 14px 0 -6px; }
+  .filename b { color: var(--fg); }
+
+  .colophon {
+    margin-top: 64px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted-fg);
+  }
+</style>
+
+<div class="layout">
+
+  <nav class="sidenav" aria-label="Guide sections">
+    <div class="sidenav-brand">
+      <span class="name">Portainer</span>
+      <span class="sub">Setup guide</span>
+    </div>
+    <p class="sidenav-eyebrow">Sections</p>
+    <ol class="sidenav-list">
+      <li><a href="#stage-1" data-nav="stage-1"><span class="num">01</span><span>Docker Desktop Setup</span></a></li>
+      <li><a href="#stage-2" data-nav="stage-2"><span class="num">02</span><span>Install Portainer</span></a></li>
+      <li><a href="#stage-3" data-nav="stage-3"><span class="num">03</span><span>Tunnel Portainer</span></a></li>
+      <li><a href="#stage-4" data-nav="stage-4"><span class="num">04</span><span>Install Traefik</span></a></li>
+      <li><a href="#stage-5" data-nav="stage-5"><span class="num">05</span><span>Create Subdomain Work</span></a></li>
+    </ol>
+    <div class="sidenav-foot">
+      <a href="#top">↑ Back to top</a>
+    </div>
+  </nav>
+
+  <div class="content">
+    <div class="content-inner">
+
+      <header class="masthead" id="top">
+        <div class="eyebrow">Self-hosted ops</div>
+        <h1>Portainer Setup Guide</h1>
+        <p class="dek">Build Portainer from source, run it on Docker Desktop's Kubernetes, give it a real address on the internet, and route every app you deploy after it — automatically, no repeat setup.</p>
+        <div class="badges">
+          <span class="badge">Sections <b>5</b></span>
+          <span class="badge">Shell <b>bash / zsh</b></span>
+          <span class="badge">Cluster <b>docker-desktop</b></span>
+          <span class="badge">Est. time <b>45–75 min</b></span>
+        </div>
+
+        <div class="prereqs">
+          <h2>Before you start</h2>
+          <ul>
+            <li><a href="https://www.docker.com/products/docker-desktop/">Docker Desktop</a> installed (Mac, Windows, or Linux)</li>
+            <li>A terminal you're comfortable in — Terminal.app or iTerm on macOS, WSL or Git Bash on Windows</li>
+            <li>A local clone of the <code>portainer-suite</code> repository, for section 2</li>
+            <li>A domain name added to a Cloudflare account, for sections 3 and 5</li>
+          </ul>
+        </div>
+      </header>
+
+      <!-- ======================= SECTION 1 ======================= -->
+      <section class="stage" id="stage-1">
+        <div class="stage-head">
+          <span class="stage-badge">01</span>
+          <h2>Docker Desktop Setup</h2>
+        </div>
+
+        <div class="stage-intro">
+          <p><b>Docker Desktop</b> is an app that runs a small, self-contained environment on your computer for building and running <i>containers</i> — bundles of an application with everything it needs to run, sealed off from the rest of your machine.</p>
+          <p><b>Kubernetes</b> is the layer on top that decides where each container runs, restarts it if it crashes, and keeps a record of everything currently running. Docker Desktop can start a real (if small) one-machine Kubernetes cluster for you, with one click.</p>
+        </div>
+
+        <div class="step">
+          <p class="step-title">Turn on Kubernetes</p>
+          <p>Open Docker Desktop → the gear icon (<b>Settings</b>) → the <b>Kubernetes</b> tab in the left list → check <b>Enable Kubernetes</b> → <b>Apply &amp; Restart</b>.</p>
+          <p>This takes a few minutes the first time — Docker Desktop is downloading and starting the Kubernetes components in the background.</p>
+        </div>
+
+        <div class="step">
+          <p class="step-title">Confirm it's actually up<span class="step-tag">terminal</span></p>
+          <p>Once Docker Desktop's status bar shows a steady green Kubernetes indicator, check from the terminal:</p>
+          <div class="code">
+            <div class="code-bar"><span>bash</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>kubectl config get-contexts
+kubectl get nodes</code></pre>
+          </div>
+          <div class="result">
+            <b>What you should see</b>
+            A context named <code>docker-desktop</code> marked current with a <code>*</code>, and one node called <code>desktop-control-plane</code> with <code>STATUS</code> reading <code>Ready</code>. If the node isn't <code>Ready</code> yet, give it another minute and re-run the second command.
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= SECTION 2 ======================= -->
+      <section class="stage" id="stage-2">
+        <div class="stage-head">
+          <span class="stage-badge">02</span>
+          <h2>Install Portainer</h2>
+        </div>
+
+        <div class="stage-intro">
+          <p><b>Portainer</b> is a web dashboard for Kubernetes and Docker — it shows you what's running, lets you deploy new things, and manages users and permissions, without needing to memorize terminal commands for everything.</p>
+          <p>We're building the Enterprise Edition ourselves, straight from the <code>portainer-suite</code> source code, so what ends up running is entirely your own build — nothing downloaded pre-made.</p>
+        </div>
+
+        <div class="step">
+          <p class="step-title">Check your chip type<span class="step-tag">terminal</span></p>
+          <p>Portainer's build needs to know which kind of processor it's compiling for.</p>
+          <div class="code">
+            <div class="code-bar"><span>bash</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>uname -m</code></pre>
+          </div>
+          <div class="result">
+            <b>What you should see</b>
+            <code>arm64</code> on Apple Silicon Macs — use <code>ARCH=arm64</code> below. <code>x86_64</code> on an Intel Mac or a typical Windows/Linux PC — use <code>ARCH=amd64</code> below instead.
+          </div>
+        </div>
+
+        <div class="step">
+          <p class="step-title">Install the frontend's dependencies<span class="step-tag">repo root</span></p>
+          <p>From the root of the <code>portainer-suite</code> repository:</p>
+          <div class="code">
+            <div class="code-bar"><span>bash</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>pnpm install</code></pre>
+          </div>
+        </div>
+
+        <div class="step">
+          <p class="step-title">Build the Portainer image<span class="step-tag">package/server-ee</span></p>
+          <p>Move into the Enterprise Edition package and build it — remember to swap in the architecture from step one:</p>
+          <div class="code">
+            <div class="code-bar"><span>bash</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>cd package/server-ee
+make build-image ENV=production PLATFORM=linux ARCH=arm64</code></pre>
+          </div>
+          <p>This compiles the Go server, builds the web interface, and packages both into a Docker image called <code>portainerci/portainer-ee:local</code>. It can take ten minutes or more the first time.</p>
+
+          <div class="callout">
+            <div class="callout-label"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1L15 14H1L8 1Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 6V9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.8" r="0.9" fill="currentColor"/></svg>Always set ENV=production</div>
+            <p>Leave <code>ENV</code> off and the Makefile quietly defaults to a <i>development</i> build. It still runs, but the browser bundle it produces comes out around 100MB, completely unminified. Loading that page looks exactly like it's frozen — it isn't, it's just downloading and parsing a huge file. Setting <code>ENV=production</code> gives you the same app at roughly a tenth of the size.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <p class="step-title">Hand the image to Kubernetes<span class="step-tag">terminal</span></p>
+          <p>Docker Desktop's Kubernetes actually runs inside its own small container (built on the open-source <code>kind</code> project), which keeps a separate image store from your regular <code>docker</code> command. So the image you just built needs to be explicitly copied across:</p>
+          <div class="code">
+            <div class="code-bar"><span>bash</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>docker save portainerci/portainer-ee:local | \
+  docker exec -i desktop-control-plane ctr -n k8s.io images import -</code></pre>
+          </div>
+        </div>
+
+        <div class="step">
+          <p class="step-title">Describe what to run<span class="step-tag">save as portainer.yaml</span></p>
+          <p>Kubernetes needs four small declarations: a <b>Namespace</b> (a labeled drawer to keep everything for Portainer together), a <b>PersistentVolumeClaim</b> (a slice of disk so Portainer's data survives restarts), a <b>Deployment</b> (the actual instructions for running the Portainer container), and a <b>Service</b> (a stable address other things use to reach it — here, one that's reachable from your own machine).</p>
+          <p class="filename">Save this as <b>portainer.yaml</b>:</p>
+          <div class="code">
+            <div class="code-bar"><span>yaml</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>apiVersion: v1
+kind: Namespace
+metadata:
+  name: portainer
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: portainer-sa-clusteradmin
+  namespace: portainer
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: portainer-crb-clusteradmin
+subjects:
+  - kind: ServiceAccount
+    name: portainer-sa-clusteradmin
+    namespace: portainer
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: portainer
+  namespace: portainer
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portainer
+  namespace: portainer
+  labels:
+    app: portainer
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: portainer
+  template:
+    metadata:
+      labels:
+        app: portainer
+    spec:
+      serviceAccountName: portainer-sa-clusteradmin
+      containers:
+        - name: portainer
+          image: portainerci/portainer-ee:local
+          imagePullPolicy: Never
+          args:
+            - --tunnel-port=30776
+          ports:
+            - containerPort: 9443
+            - containerPort: 9000
+            - containerPort: 8000
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: portainer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: portainer
+  namespace: portainer
+spec:
+  type: LoadBalancer
+  selector:
+    app: portainer
+  ports:
+    - name: https
+      port: 9443
+      targetPort: 9443
+    - name: http
+      port: 9000
+      targetPort: 9000
+    - name: edge
+      port: 8000
+      targetPort: 8000</code></pre>
+          </div>
+          <p>Then hand it to the cluster:</p>
+          <div class="code">
+            <div class="code-bar"><span>bash</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>kubectl apply -f portainer.yaml</code></pre>
+          </div>
+        </div>
+
+        <div class="step">
+          <p class="step-title">Collect your one-time setup code<span class="step-tag">terminal</span></p>
+          <div class="code">
+            <div class="code-bar"><span>bash</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>kubectl logs -n portainer -l app=portainer | grep setup_token</code></pre>
+          </div>
+          <div class="result">
+            <b>What you should see</b>
+            A line like <code>setup_token=0cdbeca0a0db44a9…</code>. Copy the value after the equals sign — you'll paste it in the next step. This code regenerates every time the Portainer pod restarts, so if you come back to this later and it's rejected, just run this command again for a fresh one.
+          </div>
+        </div>
+
+        <div class="step">
+          <p class="step-title">Finish setup in the browser</p>
+          <p>Open <code>https://localhost:9443</code>. Your browser will warn you about the certificate — that's expected, since Portainer generated its own certificate rather than getting one from a public authority. Click through it (usually <b>Advanced → Proceed</b>). Paste your setup code, choose an admin username and password, and Portainer is now yours to use.</p>
+        </div>
+      </section>
+
+      <!-- ======================= SECTION 3 ======================= -->
+      <section class="stage" id="stage-3">
+        <div class="stage-head">
+          <span class="stage-badge">03</span>
+          <h2>Tunnel Portainer</h2>
+        </div>
+
+        <div class="stage-intro">
+          <p>Right now Portainer only answers on your own computer. A <b>Cloudflare Tunnel</b> lets you reach it from anywhere on the internet, under a real domain name — without opening a single port on your router or exposing your home IP address to the world.</p>
+          <p>A small program called <code>cloudflared</code> runs inside your cluster and calls <i>out</i> to Cloudflare to set up the connection. Nothing ever calls in, so there's nothing to attack from the outside.</p>
+        </div>
+
+        <div class="step">
+          <p class="step-title">Create the tunnel</p>
+          <p>In Cloudflare's <b>Zero Trust</b> dashboard → <b>Networks → Tunnels → Create a tunnel</b> → choose the <b>Docker</b> connector. Cloudflare shows you a <code>docker run</code> command containing a long token after <code>--token</code> — copy just that token. Don't run the command it gives you; we'll run this inside Kubernetes instead.</p>
+        </div>
+
+        <div class="step">
+          <p class="step-title">Give it a public address</p>
+          <p>Still on that tunnel's setup screen, add a public hostname:</p>
+          <ul>
+            <li><b>Subdomain:</b> <code>portainer</code></li>
+            <li><b>Domain:</b> <code>yourdomain.com</code> — replace this with the domain you actually added to Cloudflare, everywhere it appears from here on</li>
+            <li><b>Service type:</b> <code>HTTPS</code></li>
+            <li><b>URL:</b> <code>portainer.portainer.svc.cluster.local:9443</code></li>
+            <li>Under <b>TLS</b> settings, enable <b>No TLS Verify</b> — Portainer's certificate is self-signed, so Cloudflare needs to be told not to double-check it for this one internal hop.</li>
+          </ul>
+        </div>
+
+        <div class="step">
+          <p class="step-title">Store the token in Kubernetes<span class="step-tag">terminal</span></p>
+          <p>Kubernetes Secrets keep sensitive values like this out of any file you might commit or share:</p>
+          <div class="code">
+            <div class="code-bar"><span>bash</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>kubectl create secret generic cloudflared-token \
+  --namespace portainer \
+  --from-literal=token='<span class="cm">PASTE_YOUR_TUNNEL_TOKEN_HERE</span>'</code></pre>
+          </div>
+        </div>
+
+        <div class="step">
+          <p class="step-title">Run the tunnel itself<span class="step-tag">save as cloudflared.yaml</span></p>
+          <div class="code">
+            <div class="code-bar"><span>yaml</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflared
+  namespace: portainer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloudflared
+  template:
+    metadata:
+      labels:
+        app: cloudflared
+    spec:
+      containers:
+        - name: cloudflared
+          image: cloudflare/cloudflared:latest
+          args:
+            - tunnel
+            - --no-autoupdate
+            - run
+          env:
+            - name: TUNNEL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflared-token
+                  key: token</code></pre>
+          </div>
+          <div class="code">
+            <div class="code-bar"><span>bash</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>kubectl apply -f cloudflared.yaml</code></pre>
+          </div>
+        </div>
+
+        <div class="step">
+          <p class="step-title">Verify it made it across<span class="step-tag">terminal</span></p>
+          <div class="code">
+            <div class="code-bar"><span>bash</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>kubectl get pods -n portainer -l app=cloudflared
+kubectl logs -n portainer -l app=cloudflared | grep -i "registered tunnel"
+curl -s https://portainer.yourdomain.com/api/status</code></pre>
+          </div>
+          <div class="result">
+            <b>What you should see</b>
+            The pod <code>Running</code>, a handful of <code>Registered tunnel connection</code> log lines, and the same little JSON reply (<code>{"Version":"3.0.0-rc1", …}</code>) you'd get hitting <code>localhost:9443</code> directly — except this time it came in over the open internet.
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= SECTION 4 ======================= -->
+      <section class="stage" id="stage-4">
+        <div class="stage-head">
+          <span class="stage-badge">04</span>
+          <h2>Install Traefik</h2>
+        </div>
+
+        <div class="stage-intro">
+          <p>Once you're running more than one app in the cluster, something needs to look at each incoming request and decide which app it's actually meant for. That's an <b>Ingress controller</b>'s job — a traffic router that sits in front of everything. <b>Traefik</b> is the one we'll use.</p>
+          <p>We'll install it through Portainer's own screen this time, using <b>Helm</b> — think of Helm as an app store for Kubernetes software: point it at a package (a "chart"), and it installs everything that package needs in one go.</p>
+        </div>
+
+        <div class="step">
+          <p class="step-title">Add the Traefik chart repository</p>
+          <p>In Portainer: your username (top right) → <b>Helm repositories</b> → <b>Add repository</b> → enter:</p>
+          <div class="code">
+            <div class="code-bar"><span>url</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>https://traefik.github.io/charts</code></pre>
+          </div>
+        </div>
+
+        <div class="step">
+          <p class="step-title">Open the Helm install screen</p>
+          <p>Go to your Kubernetes environment → <b>Applications</b> → the <b>Create from code</b> dropdown → <b>Helm chart</b>.</p>
+          <ul>
+            <li><b>Namespace:</b> <code>traefik</code> (create it here)</li>
+            <li><b>Release name:</b> <code>traefik</code></li>
+            <li><b>Helm chart source:</b> the repository you just added</li>
+          </ul>
+
+          <div class="callout">
+            <div class="callout-label"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1L15 14H1L8 1Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 6V9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.8" r="0.9" fill="currentColor"/></svg>Two charts look almost identical — pick the right one</div>
+            <p>The chart list will show both <code>traefik</code> and <code>traefik-crds</code>. Choose <b><code>traefik</code></b>. <code>traefik-crds</code> only installs some supporting definitions Traefik uses — it has no traffic router inside it at all, and can't move a single request on its own.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <p class="step-title">Set the values and install</p>
+          <p>In the <b>values.yaml</b> box on that same screen, paste:</p>
+          <div class="code">
+            <div class="code-bar"><span>yaml</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>ingressClass:
+  enabled: true
+  isDefaultClass: true</code></pre>
+          </div>
+          <p>This tells the chart to register itself as the cluster's default traffic router, so anything deployed afterward uses it without being told to explicitly. Scroll down to check the manifest preview, then click <b>Install</b>.</p>
+        </div>
+
+        <div class="step">
+          <p class="step-title">Confirm it's the one in charge<span class="step-tag">terminal</span></p>
+          <div class="code">
+            <div class="code-bar"><span>bash</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>kubectl get ingressclass</code></pre>
+          </div>
+          <div class="result">
+            <b>What you should see</b>
+            A row named <code>traefik</code> with <code>(default)</code> next to it.
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= SECTION 5 ======================= -->
+      <section class="stage" id="stage-5">
+        <div class="stage-head">
+          <span class="stage-badge">05</span>
+          <h2>Create Subdomain Work</h2>
+        </div>
+
+        <div class="stage-intro">
+          <p>Without this last piece, every new app you deploy would need its own manual entry back in the Cloudflare dashboard before anyone could reach it. A <b>wildcard subdomain</b> — one rule covering <i>anything</i>.yourdomain.com — fixes that permanently in a single step, because Traefik (installed in section 4) is what actually decides which app answers each request. Cloudflare just needs to hand all of them off to Traefik.</p>
+        </div>
+
+        <div class="step">
+          <p class="step-title">Add one wildcard rule to the same tunnel</p>
+          <p>Back in the tunnel from section 3 → <b>Public Hostname</b> tab → <b>Add a public hostname</b>:</p>
+          <ul>
+            <li><b>Subdomain:</b> <code>*</code></li>
+            <li><b>Domain:</b> <code>yourdomain.com</code></li>
+            <li><b>Service type:</b> <code>HTTP</code></li>
+            <li><b>URL:</b> <code>traefik.traefik.svc.cluster.local:80</code> — adjust the namespace in the middle if you installed Traefik somewhere other than the <code>traefik</code> namespace in section 4</li>
+          </ul>
+          <p>Save it. That's the entire routing setup — done once, forever.</p>
+        </div>
+
+        <div class="step">
+          <p class="step-title">Check the DNS record actually got created</p>
+          <div class="callout">
+            <div class="callout-label"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1L15 14H1L8 1Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 6V9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.8" r="0.9" fill="currentColor"/></svg>Cloudflare sometimes skips this one step</div>
+            <p>Saving a public hostname is supposed to create the matching DNS record automatically — and reliably does for an exact hostname like <code>portainer.yourdomain.com</code>. For wildcard entries specifically, it sometimes quietly doesn't. If subdomains still won't resolve after the steps below, this is almost always why.</p>
+            <p><b>The fix:</b> in Cloudflare, go to <b>DNS → Records</b>. Open the record for your exact <code>portainer</code> hostname from section 3 and copy its <b>Target</b> (something ending in <code>.cfargotunnel.com</code>). Then add a new record: <b>Type</b> <code>CNAME</code>, <b>Name</b> <code>*</code>, <b>Target</b> that same value, <b>Proxy status</b> Proxied (orange cloud).</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <p class="step-title">Prove it works end to end<span class="step-tag">terminal</span></p>
+          <div class="code">
+            <div class="code-bar"><span>bash</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>dig +short anything-made-up.yourdomain.com
+curl -s http://anything-made-up.yourdomain.com/</code></pre>
+          </div>
+          <div class="result">
+            <b>What you should see</b>
+            The <code>dig</code> command returns Cloudflare's IP addresses even for a name you made up on the spot — proof the wildcard is live. The <code>curl</code> will come back empty or 404, which is also correct: nothing is actually deployed at that name. Deploy a real app under this domain from here on, and it's reachable immediately — no trip back to Cloudflare required.
+          </div>
+        </div>
+      </section>
+
+      <footer class="colophon">
+        <span>Portainer Setup Guide</span>
+        <span>Docker Desktop → Portainer → Tunnel → Traefik → Subdomains</span>
+      </footer>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  document.querySelectorAll('.copy-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var codeEl = btn.closest('.code').querySelector('pre code');
+      var text = codeEl.textContent;
+      var done = function (ok) {
+        var original = btn.textContent;
+        btn.textContent = ok ? 'Copied' : 'Select & copy';
+        setTimeout(function () { btn.textContent = original; }, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+      } else {
+        done(false);
+      }
+    });
+  });
+
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('.sidenav-list a'));
+    var stages = links.map(function (a) {
+      return document.getElementById(a.getAttribute('data-nav'));
+    });
+    function setActive(id) {
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-nav') === id);
+      });
+    }
+    if ('IntersectionObserver' in window) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        });
+      }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+      stages.forEach(function (el) { if (el) observer.observe(el); });
+    }
+  })();
+</script>
