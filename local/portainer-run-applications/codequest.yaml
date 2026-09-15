@@ -128,12 +128,6 @@ metadata:
   labels:
     app: codequest
     managed-by: portainer-run
-  annotations:
-    portainer-run/deploy-type: vibe
-    portainer-run/git-target-id: d23790e8-fdc7-4cd0-9958-d0545086c15a
-    portainer-run/git-branch: main
-    portainer-run/git-path: local/portainer-run-applications/codequest.yaml
-    portainer-run/vibe-source-path: local/portainer-run-applications/codequest
 spec:
   type: ClusterIP
   selector:
@@ -152,16 +146,11 @@ metadata:
     app: codequest
     managed-by: portainer-run
   annotations:
-    portainer-run/deploy-type: vibe
-    portainer-run/git-target-id: d23790e8-fdc7-4cd0-9958-d0545086c15a
-    portainer-run/git-branch: main
-    portainer-run/git-path: local/portainer-run-applications/codequest.yaml
-    portainer-run/vibe-source-path: local/portainer-run-applications/codequest
     kubernetes.io/ingress.class: traefik
 spec:
   ingressClassName: traefik
   rules:
-    - host: codequest
+    - host: codequest.heyronmar.com
       http:
         paths:
           - path: /
