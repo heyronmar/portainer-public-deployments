@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Tracker</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:system-ui,sans-serif;background:#0f1117;color:#c8d0dc;padding:24px}
+    h1{font-size:22px;font-weight:700;color:#e8edf5;margin-bottom:4px}
+    .sub{font-size:13px;color:#6b7a8d;margin-bottom:24px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:900px}
+    .card{background:#111419;border:1px solid #1e2530;border-radius:10px;padding:18px 20px}
+    .card h2{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#6b7a8d;margin-bottom:14px;font-family:monospace}
+    label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#6b7a8d;margin-bottom:4px;font-family:monospace}
+    input,select{width:100%;background:#0a0c0f;border:1px solid #2a3240;border-radius:6px;color:#c8d0dc;font-family:monospace;font-size:13px;padding:8px 11px;margin-bottom:10px;outline:none}
+    input:focus,select:focus{border-color:#0ea5e9}
+    button.primary{background:#0ea5e9;color:#000;border:none;border-radius:6px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;width:100%}
+    button.primary:hover{background:#38bdf8}
+    .rows{display:flex;flex-direction:column;gap:6px;max-height:380px;overflow-y:auto}
+    .row{display:flex;align-items:center;gap:10px;background:#0a0c0f;border:1px solid #1e2530;border-radius:6px;padding:8px 12px}
+    .row-desc{flex:1;font-size:13px}
+    .row-cat{font-size:10px;font-family:monospace;background:rgba(14,165,233,.12);color:#0ea5e9;border-radius:4px;padding:2px 7px}
+    .row-amt{font-family:monospace;font-size:13px;color:#4ade80;min-width:70px;text-align:right}
+    .del{background:none;border:none;color:#4a5568;cursor:pointer;font-size:15px;width:auto;padding:0 2px}
+    .del:hover{color:#ef4444}
+    .sum-row{display:flex;justify-content:space-between;font-family:monospace;font-size:12px;padding:5px 0;border-bottom:1px solid #1e2530}
+    .sum-row:last-child{border:none}
+    .total{display:flex;justify-content:space-between;font-family:monospace;font-size:14px;font-weight:700;color:#e8edf5;padding-top:10px;border-top:1px solid #2a3240;margin-top:6px}
+    .empty{color:#4a5568;font-size:13px;font-family:monospace;text-align:center;padding:20px 0}
+    @media(max-width:600px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <h1 id="title">Expense Tracker</h1>
+  <div class="sub" id="sub">Loading…</div>
+  <div class="grid">
+    <div class="card">
+      <h2>Add Expense</h2>
+      <label>Description</label>
+      <input id="desc" placeholder="Coffee, travel, software…">
+      <label>Amount</label>
+      <input id="amount" type="number" step="0.01" min="0" placeholder="0.00">
+      <label>Category</label>
+      <select id="cat">
+        <option value="food">Food & Drink</option>
+        <option value="travel">Travel</option>
+        <option value="software">Software</option>
+        <option value="office">Office</option>
+        <option value="other">Other</option>
+      </select>
+      <button class="primary" onclick="add()">Add Expense</button>
+    </div>
+    <div class="card">
+      <h2>Summary</h2>
+      <div id="summary"><div class="empty">No expenses yet</div></div>
+    </div>
+    <div class="card" style="grid-column:1/-1">
+      <h2>Expenses</h2>
+      <div class="rows" id="list"><div class="empty">No expenses yet</div></div>
+    </div>
+  </div>
+<script>
+  let cur = 'USD'
+  const fmt = n => new Intl.NumberFormat('en-US',{style:'currency',currency:cur}).format(n)
+
+  async function init() {
+    const cfg = await fetch('/api/config').then(r=>r.json())
+    cur = cfg.currency
+    document.getElementById('title').textContent = cfg.title
+    document.getElementById('sub').textContent = `Currency: ${cfg.currency}`
+    document.title = cfg.title
+    load()
+  }
+
+  async function load() {
+    const [list, sum] = await Promise.all([
+      fetch('/api/expenses').then(r=>r.json()),
+      fetch('/api/summary').then(r=>r.json())
+    ])
+    const el = document.getElementById('list')
+    el.innerHTML = list.length ? list.map(e=>`
+      <div class="row">
+        <span class="row-desc">${e.description}</span>
+        <span class="row-cat">${e.category}</span>
+        <span class="row-amt">${fmt(e.amount)}</span>
+        <button class="del" onclick="del(${e.id})">✕</button>
+      </div>`).join('') : '<div class="empty">No expenses yet</div>'
+    const se = document.getElementById('summary')
+    se.innerHTML = sum.byCategory.length ? sum.byCategory.map(r=>`
+      <div class="sum-row"><span>${r.category}</span><span style="color:#4ade80">${fmt(r.total)}</span></div>
+    `).join('') + `<div class="total"><span>Total</span><span>${fmt(sum.total)}</span></div>`
+    : '<div class="empty">No expenses yet</div>'
+  }
+
+  async function add() {
+    const desc = document.getElementById('desc').value.trim()
+    const amount = document.getElementById('amount').value
+    const category = document.getElementById('cat').value
+    if (!desc || !amount) return alert('Description and amount required')
+    await fetch('/api/expenses',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({description:desc,amount:Number(amount),category})})
+    document.getElementById('desc').value = ''
+    document.getElementById('amount').value = ''
+    load()
+  }
+
+  async function del(id) {
+    await fetch('/api/expenses/'+id,{method:'DELETE'})
+    load()
+  }
+
+  init()
+</script>
+</body>
+</html>
