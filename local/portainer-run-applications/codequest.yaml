@@ -8,10 +8,10 @@ metadata:
     managed-by: portainer-run
   annotations:
     portainer-run/deploy-type: vibe
-    portainer-run/git-target-id: 85229a2d-179d-4558-a483-fa670a5a21ec
+    portainer-run/git-target-id: d23790e8-fdc7-4cd0-9958-d0545086c15a
     portainer-run/git-branch: main
     portainer-run/git-path: local/portainer-run-applications/codequest.yaml
-    portainer-run/vibe-source-path: local/portainer-run-applications/codequest/src
+    portainer-run/vibe-source-path: local/portainer-run-applications/codequest
 spec:
   accessModes:
     - ReadWriteOnce
@@ -29,10 +29,10 @@ metadata:
     managed-by: portainer-run
   annotations:
     portainer-run/deploy-type: vibe
-    portainer-run/git-target-id: 85229a2d-179d-4558-a483-fa670a5a21ec
+    portainer-run/git-target-id: d23790e8-fdc7-4cd0-9958-d0545086c15a
     portainer-run/git-branch: main
     portainer-run/git-path: local/portainer-run-applications/codequest.yaml
-    portainer-run/vibe-source-path: local/portainer-run-applications/codequest/src
+    portainer-run/vibe-source-path: local/portainer-run-applications/codequest
 spec:
   replicas: 1
   selector:
@@ -50,14 +50,14 @@ spec:
       automountServiceAccountToken: false
       initContainers:
         - name: vibe-sync
-          image: alpine/git:2.45.2
+          image: alpine/git:latest
           command:
             - sh
             - '-c'
             - >-
-              git clone --depth 1 --branch main
+              git config --global http.sslVerify false && git clone --depth 1 --branch main
               https://${GIT_USERNAME}:${GIT_TOKEN}@github.com/heyronmar/portainer-public-deployments /tmp/repo && mkdir
-              -p /usr/share/nginx/html && cp -r /tmp/repo/local/portainer-run-applications/codequest/src/.
+              -p /usr/share/nginx/html && cp -r /tmp/repo/local/portainer-run-applications/codequest/.
               /usr/share/nginx/html/ && rm -rf /tmp/repo
           resources:
             requests:
@@ -89,7 +89,7 @@ spec:
               type: RuntimeDefault
       containers:
         - name: codequest
-          image: nginxinc/nginx-unprivileged:1.27-alpine
+          image: nginxinc/nginx-unprivileged:alpine
           command:
             - sh
             - '-c'
@@ -110,8 +110,6 @@ spec:
               memory: 4Gi
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false
-            runAsNonRoot: true
             capabilities:
               drop:
                 - ALL
@@ -132,10 +130,10 @@ metadata:
     managed-by: portainer-run
   annotations:
     portainer-run/deploy-type: vibe
-    portainer-run/git-target-id: 85229a2d-179d-4558-a483-fa670a5a21ec
+    portainer-run/git-target-id: d23790e8-fdc7-4cd0-9958-d0545086c15a
     portainer-run/git-branch: main
     portainer-run/git-path: local/portainer-run-applications/codequest.yaml
-    portainer-run/vibe-source-path: local/portainer-run-applications/codequest/src
+    portainer-run/vibe-source-path: local/portainer-run-applications/codequest
 spec:
   type: ClusterIP
   selector:
@@ -155,19 +153,15 @@ metadata:
     managed-by: portainer-run
   annotations:
     portainer-run/deploy-type: vibe
-    portainer-run/git-target-id: 85229a2d-179d-4558-a483-fa670a5a21ec
+    portainer-run/git-target-id: d23790e8-fdc7-4cd0-9958-d0545086c15a
     portainer-run/git-branch: main
     portainer-run/git-path: local/portainer-run-applications/codequest.yaml
-    portainer-run/vibe-source-path: local/portainer-run-applications/codequest/src
+    portainer-run/vibe-source-path: local/portainer-run-applications/codequest
     kubernetes.io/ingress.class: traefik
 spec:
   ingressClassName: traefik
-  tls:
-    - hosts:
-        - codequest.ronmarlacamiento.com
-      secretName: codequest-tls
   rules:
-    - host: codequest.ronmarlacamiento.com
+    - host: codequest
       http:
         paths:
           - path: /
