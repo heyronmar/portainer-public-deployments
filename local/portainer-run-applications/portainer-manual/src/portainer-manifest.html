@@ -4,9 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Portainer Setup Guide</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
   :root {
     --bg: #ffffff;
@@ -80,7 +79,7 @@
   body {
     background: var(--bg);
     color: var(--fg);
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-size: 16px;
     line-height: 1.65;
     margin: 0;
@@ -88,7 +87,7 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  h1, h2, h3 { font-family: "Inter", sans-serif; text-wrap: balance; }
+  h1, h2, h3 { font-family: "DM Sans", sans-serif; text-wrap: balance; }
 
   a { color: var(--fg); text-underline-offset: 3px; text-decoration-color: var(--border); }
   a:hover { text-decoration-color: var(--fg); }
@@ -101,7 +100,7 @@
   code { font-variant-ligatures: none; }
 
   /* ---------- Mobile-first layout ---------- */
-  .layout { max-width: 1160px; margin: 0 auto; }
+  .layout { max-width: 1320px; margin: 0 auto; }
 
   .sidenav { padding-top: 32px; padding-bottom: 14px; }
   .sidenav-brand {
@@ -161,7 +160,7 @@
   .sidenav-foot { display: none; }
 
   .content { min-width: 0; padding-top: 20px; }
-  .content-inner { max-width: 680px; }
+  .content-inner { max-width: 980px; }
 
   /* ---------- Wide screens: fixed left rail, content scrolls independently ---------- */
   @media (min-width: 720px) {
@@ -217,8 +216,12 @@
       margin-left: 240px;
       height: 100vh;
       overflow-y: auto;
-      padding: 48px 56px 96px;
+      padding: 48px 64px 96px;
     }
+  }
+
+  @media (min-width: 1400px) {
+    .content { padding-left: 96px; padding-right: 96px; }
   }
 
   /* ---------- Masthead ---------- */
@@ -292,7 +295,7 @@
   }
   .stage-head h2 { font-weight: 600; font-size: clamp(1.2rem, 3vw, 1.45rem); margin: 0; }
 
-  .stage-intro { margin-top: 14px; max-width: 62ch; }
+  .stage-intro { margin-top: 14px; max-width: 68ch; }
   .stage-intro p { margin: 0 0 12px; color: var(--fg); }
   .stage-intro b { color: var(--fg); }
 
@@ -320,7 +323,7 @@
     border-radius: 4px;
     padding: 1px 6px;
   }
-  .step p { margin: 0 0 10px; max-width: 62ch; color: var(--fg); }
+  .step p { margin: 0 0 10px; max-width: 68ch; color: var(--fg); }
   .step p:last-of-type { margin-bottom: 0; }
   .step ul { margin: 0; padding-left: 1.2em; color: var(--fg); }
   .step li { margin: 4px 0; }
@@ -339,7 +342,7 @@
     border-bottom: 1px solid rgba(255,255,255,0.08);
   }
   .copy-btn {
-    font-family: "Inter", sans-serif;
+    font-family: "DM Sans", sans-serif;
     font-size: 11.5px;
     color: var(--code-muted);
     background: transparent;
@@ -445,7 +448,7 @@
       <li><a href="#stage-5" data-nav="stage-5"><span class="num">05</span><span>Create Subdomain Work</span></a></li>
     </ol>
     <div class="sidenav-foot">
-      <a href="#top">&uarr; Back to top</a>
+      <a href="#top">Back to top</a>
     </div>
   </nav>
 
@@ -455,19 +458,19 @@
       <header class="masthead" id="top">
         <div class="eyebrow">Self-hosted ops</div>
         <h1>Portainer Setup Guide</h1>
-        <p class="dek">Build Portainer from source, run it on Docker Desktop's Kubernetes, give it a real address on the internet, and route every app you deploy after it &mdash; automatically, no repeat setup.</p>
+        <p class="dek">Build Portainer from source, run it on Docker Desktop's Kubernetes, give it a real address on the internet, and route every app you deploy after it - automatically, no repeat setup.</p>
         <div class="badges">
           <span class="badge">Sections <b>5</b></span>
           <span class="badge">Shell <b>bash / zsh</b></span>
           <span class="badge">Cluster <b>docker-desktop</b></span>
-          <span class="badge">Est. time <b>45&ndash;75 min</b></span>
+          <span class="badge">Est. time <b>45-75 min</b></span>
         </div>
 
         <div class="prereqs">
           <h2>Before you start</h2>
           <ul>
             <li><a href="https://www.docker.com/products/docker-desktop/">Docker Desktop</a> installed (Mac, Windows, or Linux)</li>
-            <li>A terminal you're comfortable in &mdash; Terminal.app or iTerm on macOS, WSL or Git Bash on Windows</li>
+            <li>A terminal you're comfortable in - Terminal.app or iTerm on macOS, WSL or Git Bash on Windows</li>
             <li>A local clone of the <code>portainer-suite</code> repository, for section 2</li>
             <li>A domain name added to a Cloudflare account, for sections 3 and 5</li>
           </ul>
@@ -482,14 +485,14 @@
         </div>
 
         <div class="stage-intro">
-          <p><b>Docker Desktop</b> is an app that runs a small, self-contained environment on your computer for building and running <i>containers</i> &mdash; bundles of an application with everything it needs to run, sealed off from the rest of your machine.</p>
+          <p><b>Docker Desktop</b> is an app that runs a small, self-contained environment on your computer for building and running <i>containers</i> - bundles of an application with everything it needs to run, sealed off from the rest of your machine.</p>
           <p><b>Kubernetes</b> is the layer on top that decides where each container runs, restarts it if it crashes, and keeps a record of everything currently running. Docker Desktop can start a real (if small) one-machine Kubernetes cluster for you, with one click.</p>
         </div>
 
         <div class="step">
           <p class="step-title">Turn on Kubernetes</p>
-          <p>Open Docker Desktop &rarr; the gear icon (<b>Settings</b>) &rarr; the <b>Kubernetes</b> tab in the left list &rarr; check <b>Enable Kubernetes</b> &rarr; <b>Apply &amp; Restart</b>.</p>
-          <p>This takes a few minutes the first time &mdash; Docker Desktop is downloading and starting the Kubernetes components in the background.</p>
+          <p>Open Docker Desktop -&gt; the gear icon (<b>Settings</b>) -&gt; the <b>Kubernetes</b> tab in the left list -&gt; check <b>Enable Kubernetes</b> -&gt; <b>Apply &amp; Restart</b>.</p>
+          <p>This takes a few minutes the first time - Docker Desktop is downloading and starting the Kubernetes components in the background.</p>
         </div>
 
         <div class="step">
@@ -515,8 +518,8 @@ kubectl get nodes</code></pre>
         </div>
 
         <div class="stage-intro">
-          <p><b>Portainer</b> is a web dashboard for Kubernetes and Docker &mdash; it shows you what's running, lets you deploy new things, and manages users and permissions, without needing to memorize terminal commands for everything.</p>
-          <p>We're building the Enterprise Edition ourselves, straight from the <code>portainer-suite</code> source code, so what ends up running is entirely your own build &mdash; nothing downloaded pre-made.</p>
+          <p><b>Portainer</b> is a web dashboard for Kubernetes and Docker - it shows you what's running, lets you deploy new things, and manages users and permissions, without needing to memorize terminal commands for everything.</p>
+          <p>We're building the Enterprise Edition ourselves, straight from the <code>portainer-suite</code> source code, so what ends up running is entirely your own build - nothing downloaded pre-made.</p>
         </div>
 
         <div class="step">
@@ -528,7 +531,7 @@ kubectl get nodes</code></pre>
           </div>
           <div class="result">
             <b>What you should see</b>
-            <code>arm64</code> on Apple Silicon Macs &mdash; use <code>ARCH=arm64</code> below. <code>x86_64</code> on an Intel Mac or a typical Windows/Linux PC &mdash; use <code>ARCH=amd64</code> below instead.
+            <code>arm64</code> on Apple Silicon Macs - use <code>ARCH=arm64</code> below. <code>x86_64</code> on an Intel Mac or a typical Windows/Linux PC - use <code>ARCH=amd64</code> below instead.
           </div>
         </div>
 
@@ -543,7 +546,7 @@ kubectl get nodes</code></pre>
 
         <div class="step">
           <p class="step-title">Build the Portainer image<span class="step-tag">package/server-ee</span></p>
-          <p>Move into the Enterprise Edition package and build it &mdash; remember to swap in the architecture from step one:</p>
+          <p>Move into the Enterprise Edition package and build it - remember to swap in the architecture from step one:</p>
           <div class="code">
             <div class="code-bar"><span>bash</span><button class="copy-btn" type="button">Copy</button></div>
             <pre><code>cd package/server-ee
@@ -553,7 +556,7 @@ make build-image ENV=production PLATFORM=linux ARCH=arm64</code></pre>
 
           <div class="callout">
             <div class="callout-label"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1L15 14H1L8 1Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 6V9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.8" r="0.9" fill="currentColor"/></svg>Always set ENV=production</div>
-            <p>Leave <code>ENV</code> off and the Makefile quietly defaults to a <i>development</i> build. It still runs, but the browser bundle it produces comes out around 100MB, completely unminified. Loading that page looks exactly like it's frozen &mdash; it isn't, it's just downloading and parsing a huge file. Setting <code>ENV=production</code> gives you the same app at roughly a tenth of the size.</p>
+            <p>Leave <code>ENV</code> off and the Makefile quietly defaults to a <i>development</i> build. It still runs, but the browser bundle it produces comes out around 100MB, completely unminified. Loading that page looks exactly like it's frozen - it isn't, it's just downloading and parsing a huge file. Setting <code>ENV=production</code> gives you the same app at roughly a tenth of the size.</p>
           </div>
         </div>
 
@@ -569,7 +572,7 @@ make build-image ENV=production PLATFORM=linux ARCH=arm64</code></pre>
 
         <div class="step">
           <p class="step-title">Describe what to run<span class="step-tag">save as portainer.yaml</span></p>
-          <p>Kubernetes needs four small declarations: a <b>Namespace</b> (a labeled drawer to keep everything for Portainer together), a <b>PersistentVolumeClaim</b> (a slice of disk so Portainer's data survives restarts), a <b>Deployment</b> (the actual instructions for running the Portainer container), and a <b>Service</b> (a stable address other things use to reach it &mdash; here, one that's reachable from your own machine).</p>
+          <p>Kubernetes needs four small declarations: a <b>Namespace</b> (a labeled drawer to keep everything for Portainer together), a <b>PersistentVolumeClaim</b> (a slice of disk so Portainer's data survives restarts), a <b>Deployment</b> (the actual instructions for running the Portainer container), and a <b>Service</b> (a stable address other things use to reach it - here, one that's reachable from your own machine).</p>
           <p class="filename">Save this as <b>portainer.yaml</b>:</p>
           <div class="code">
             <div class="code-bar"><span>yaml</span><button class="copy-btn" type="button">Copy</button></div>
@@ -682,13 +685,13 @@ spec:
           </div>
           <div class="result">
             <b>What you should see</b>
-            A line like <code>setup_token=0cdbeca0a0db44a9&hellip;</code>. Copy the value after the equals sign &mdash; you'll paste it in the next step. This code regenerates every time the Portainer pod restarts, so if you come back to this later and it's rejected, just run this command again for a fresh one.
+            A line like <code>setup_token=0cdbeca0a0db44a9...</code>. Copy the value after the equals sign - you'll paste it in the next step. This code regenerates every time the Portainer pod restarts, so if you come back to this later and it's rejected, just run this command again for a fresh one.
           </div>
         </div>
 
         <div class="step">
           <p class="step-title">Finish setup in the browser</p>
-          <p>Open <code>https://localhost:9443</code>. Your browser will warn you about the certificate &mdash; that's expected, since Portainer generated its own certificate rather than getting one from a public authority. Click through it (usually <b>Advanced &rarr; Proceed</b>). Paste your setup code, choose an admin username and password, and Portainer is now yours to use.</p>
+          <p>Open <code>https://localhost:9443</code>. Your browser will warn you about the certificate - that's expected, since Portainer generated its own certificate rather than getting one from a public authority. Click through it (usually <b>Advanced -&gt; Proceed</b>). Paste your setup code, choose an admin username and password, and Portainer is now yours to use.</p>
         </div>
       </section>
 
@@ -700,13 +703,13 @@ spec:
         </div>
 
         <div class="stage-intro">
-          <p>Right now Portainer only answers on your own computer. A <b>Cloudflare Tunnel</b> lets you reach it from anywhere on the internet, under a real domain name &mdash; without opening a single port on your router or exposing your home IP address to the world.</p>
+          <p>Right now Portainer only answers on your own computer. A <b>Cloudflare Tunnel</b> lets you reach it from anywhere on the internet, under a real domain name - without opening a single port on your router or exposing your home IP address to the world.</p>
           <p>A small program called <code>cloudflared</code> runs inside your cluster and calls <i>out</i> to Cloudflare to set up the connection. Nothing ever calls in, so there's nothing to attack from the outside.</p>
         </div>
 
         <div class="step">
           <p class="step-title">Create the tunnel</p>
-          <p>In Cloudflare's <b>Zero Trust</b> dashboard &rarr; <b>Networks &rarr; Tunnels &rarr; Create a tunnel</b> &rarr; choose the <b>Docker</b> connector. Cloudflare shows you a <code>docker run</code> command containing a long token after <code>--token</code> &mdash; copy just that token. Don't run the command it gives you; we'll run this inside Kubernetes instead.</p>
+          <p>In Cloudflare's <b>Zero Trust</b> dashboard -&gt; <b>Networks -&gt; Tunnels -&gt; Create a tunnel</b> -&gt; choose the <b>Docker</b> connector. Cloudflare shows you a <code>docker run</code> command containing a long token after <code>--token</code> - copy just that token. Don't run the command it gives you; we'll run this inside Kubernetes instead.</p>
         </div>
 
         <div class="step">
@@ -714,10 +717,10 @@ spec:
           <p>Still on that tunnel's setup screen, add a public hostname:</p>
           <ul>
             <li><b>Subdomain:</b> <code>portainer</code></li>
-            <li><b>Domain:</b> <code>yourdomain.com</code> &mdash; replace this with the domain you actually added to Cloudflare, everywhere it appears from here on</li>
+            <li><b>Domain:</b> <code>yourdomain.com</code> - replace this with the domain you actually added to Cloudflare, everywhere it appears from here on</li>
             <li><b>Service type:</b> <code>HTTPS</code></li>
             <li><b>URL:</b> <code>portainer.portainer.svc.cluster.local:9443</code></li>
-            <li>Under <b>TLS</b> settings, enable <b>No TLS Verify</b> &mdash; Portainer's certificate is self-signed, so Cloudflare needs to be told not to double-check it for this one internal hop.</li>
+            <li>Under <b>TLS</b> settings, enable <b>No TLS Verify</b> - Portainer's certificate is self-signed, so Cloudflare needs to be told not to double-check it for this one internal hop.</li>
           </ul>
         </div>
 
@@ -781,7 +784,7 @@ curl -s https://portainer.yourdomain.com/api/status</code></pre>
           </div>
           <div class="result">
             <b>What you should see</b>
-            The pod <code>Running</code>, a handful of <code>Registered tunnel connection</code> log lines, and the same little JSON reply (<code>{"Version":"3.0.0-rc1", &hellip;}</code>) you'd get hitting <code>localhost:9443</code> directly &mdash; except this time it came in over the open internet.
+            The pod <code>Running</code>, a handful of <code>Registered tunnel connection</code> log lines, and the same little JSON reply (<code>{"Version":"3.0.0-rc1", ...}</code>) you'd get hitting <code>localhost:9443</code> directly - except this time it came in over the open internet.
           </div>
         </div>
       </section>
@@ -794,13 +797,13 @@ curl -s https://portainer.yourdomain.com/api/status</code></pre>
         </div>
 
         <div class="stage-intro">
-          <p>Once you're running more than one app in the cluster, something needs to look at each incoming request and decide which app it's actually meant for. That's an <b>Ingress controller</b>'s job &mdash; a traffic router that sits in front of everything. <b>Traefik</b> is the one we'll use.</p>
-          <p>We'll install it through Portainer's own screen this time, using <b>Helm</b> &mdash; think of Helm as an app store for Kubernetes software: point it at a package (a "chart"), and it installs everything that package needs in one go.</p>
+          <p>Once you're running more than one app in the cluster, something needs to look at each incoming request and decide which app it's actually meant for. That's an <b>Ingress controller</b>'s job - a traffic router that sits in front of everything. <b>Traefik</b> is the one we'll use.</p>
+          <p>We'll install it through Portainer's own screen this time, using <b>Helm</b> - think of Helm as an app store for Kubernetes software: point it at a package (a "chart"), and it installs everything that package needs in one go.</p>
         </div>
 
         <div class="step">
           <p class="step-title">Add the Traefik chart repository</p>
-          <p>In Portainer: your username (top right) &rarr; <b>Helm repositories</b> &rarr; <b>Add repository</b> &rarr; enter:</p>
+          <p>In Portainer: your username (top right) -&gt; <b>Helm repositories</b> -&gt; <b>Add repository</b> -&gt; enter:</p>
           <div class="code">
             <div class="code-bar"><span>url</span><button class="copy-btn" type="button">Copy</button></div>
             <pre><code>https://traefik.github.io/charts</code></pre>
@@ -809,7 +812,7 @@ curl -s https://portainer.yourdomain.com/api/status</code></pre>
 
         <div class="step">
           <p class="step-title">Open the Helm install screen</p>
-          <p>Go to your Kubernetes environment &rarr; <b>Applications</b> &rarr; the <b>Create from code</b> dropdown &rarr; <b>Helm chart</b>.</p>
+          <p>Go to your Kubernetes environment -&gt; <b>Applications</b> -&gt; the <b>Create from code</b> dropdown -&gt; <b>Helm chart</b>.</p>
           <ul>
             <li><b>Namespace:</b> <code>traefik</code> (create it here)</li>
             <li><b>Release name:</b> <code>traefik</code></li>
@@ -817,8 +820,8 @@ curl -s https://portainer.yourdomain.com/api/status</code></pre>
           </ul>
 
           <div class="callout">
-            <div class="callout-label"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1L15 14H1L8 1Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 6V9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.8" r="0.9" fill="currentColor"/></svg>Two charts look almost identical &mdash; pick the right one</div>
-            <p>The chart list will show both <code>traefik</code> and <code>traefik-crds</code>. Choose <b><code>traefik</code></b>. <code>traefik-crds</code> only installs some supporting definitions Traefik uses &mdash; it has no traffic router inside it at all, and can't move a single request on its own.</p>
+            <div class="callout-label"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1L15 14H1L8 1Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 6V9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.8" r="0.9" fill="currentColor"/></svg>Two charts look almost identical - pick the right one</div>
+            <p>The chart list will show both <code>traefik</code> and <code>traefik-crds</code>. Choose <b><code>traefik</code></b>. <code>traefik-crds</code> only installs some supporting definitions Traefik uses - it has no traffic router inside it at all, and can't move a single request on its own.</p>
           </div>
         </div>
 
@@ -855,27 +858,27 @@ curl -s https://portainer.yourdomain.com/api/status</code></pre>
         </div>
 
         <div class="stage-intro">
-          <p>Without this last piece, every new app you deploy would need its own manual entry back in the Cloudflare dashboard before anyone could reach it. A <b>wildcard subdomain</b> &mdash; one rule covering <i>anything</i>.yourdomain.com &mdash; fixes that permanently in a single step, because Traefik (installed in section 4) is what actually decides which app answers each request. Cloudflare just needs to hand all of them off to Traefik.</p>
+          <p>Without this last piece, every new app you deploy would need its own manual entry back in the Cloudflare dashboard before anyone could reach it. A <b>wildcard subdomain</b> - one rule covering <i>anything</i>.yourdomain.com - fixes that permanently in a single step, because Traefik (installed in section 4) is what actually decides which app answers each request. Cloudflare just needs to hand all of them off to Traefik.</p>
         </div>
 
         <div class="step">
           <p class="step-title">Add one wildcard rule to the same tunnel</p>
-          <p>Back in the tunnel from section 3 &rarr; <b>Public Hostname</b> tab &rarr; <b>Add a public hostname</b>:</p>
+          <p>Back in the tunnel from section 3 -&gt; <b>Public Hostname</b> tab -&gt; <b>Add a public hostname</b>:</p>
           <ul>
             <li><b>Subdomain:</b> <code>*</code></li>
             <li><b>Domain:</b> <code>yourdomain.com</code></li>
             <li><b>Service type:</b> <code>HTTP</code></li>
-            <li><b>URL:</b> <code>traefik.traefik.svc.cluster.local:80</code> &mdash; adjust the namespace in the middle if you installed Traefik somewhere other than the <code>traefik</code> namespace in section 4</li>
+            <li><b>URL:</b> <code>traefik.traefik.svc.cluster.local:80</code> - adjust the namespace in the middle if you installed Traefik somewhere other than the <code>traefik</code> namespace in section 4</li>
           </ul>
-          <p>Save it. That's the entire routing setup &mdash; done once, forever.</p>
+          <p>Save it. That's the entire routing setup - done once, forever.</p>
         </div>
 
         <div class="step">
           <p class="step-title">Check the DNS record actually got created</p>
           <div class="callout">
             <div class="callout-label"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1L15 14H1L8 1Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 6V9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.8" r="0.9" fill="currentColor"/></svg>Cloudflare sometimes skips this one step</div>
-            <p>Saving a public hostname is supposed to create the matching DNS record automatically &mdash; and reliably does for an exact hostname like <code>portainer.yourdomain.com</code>. For wildcard entries specifically, it sometimes quietly doesn't. If subdomains still won't resolve after the steps below, this is almost always why.</p>
-            <p><b>The fix:</b> in Cloudflare, go to <b>DNS &rarr; Records</b>. Open the record for your exact <code>portainer</code> hostname from section 3 and copy its <b>Target</b> (something ending in <code>.cfargotunnel.com</code>). Then add a new record: <b>Type</b> <code>CNAME</code>, <b>Name</b> <code>*</code>, <b>Target</b> that same value, <b>Proxy status</b> Proxied (orange cloud).</p>
+            <p>Saving a public hostname is supposed to create the matching DNS record automatically - and reliably does for an exact hostname like <code>portainer.yourdomain.com</code>. For wildcard entries specifically, it sometimes quietly doesn't. If subdomains still won't resolve after the steps below, this is almost always why.</p>
+            <p><b>The fix:</b> in Cloudflare, go to <b>DNS -&gt; Records</b>. Open the record for your exact <code>portainer</code> hostname from section 3 and copy its <b>Target</b> (something ending in <code>.cfargotunnel.com</code>). Then add a new record: <b>Type</b> <code>CNAME</code>, <b>Name</b> <code>*</code>, <b>Target</b> that same value, <b>Proxy status</b> Proxied (orange cloud).</p>
           </div>
         </div>
 
@@ -888,14 +891,14 @@ curl -s http://anything-made-up.yourdomain.com/</code></pre>
           </div>
           <div class="result">
             <b>What you should see</b>
-            The <code>dig</code> command returns Cloudflare's IP addresses even for a name you made up on the spot &mdash; proof the wildcard is live. The <code>curl</code> will come back empty or 404, which is also correct: nothing is actually deployed at that name. Deploy a real app under this domain from here on, and it's reachable immediately &mdash; no trip back to Cloudflare required.
+            The <code>dig</code> command returns Cloudflare's IP addresses even for a name you made up on the spot - proof the wildcard is live. The <code>curl</code> will come back empty or 404, which is also correct: nothing is actually deployed at that name. Deploy a real app under this domain from here on, and it's reachable immediately - no trip back to Cloudflare required.
           </div>
         </div>
       </section>
 
       <footer class="colophon">
         <span>Portainer Setup Guide</span>
-        <span>Docker Desktop &rarr; Portainer &rarr; Tunnel &rarr; Traefik &rarr; Subdomains</span>
+        <span>Docker Desktop -&gt; Portainer -&gt; Tunnel -&gt; Traefik -&gt; Subdomains</span>
       </footer>
 
     </div>
