@@ -27,6 +27,7 @@ metadata:
     portainer-idp/git-path: target-space/namespaces/n8n.yml
     portainer-idp/deploy-type: manifest-builder
     portainer-idp/edge-stack: 'true'
+    portainer-idp/edge-stack-id: '20'
     portainer-idp/edge-group-ids: '28'
 spec:
   replicas: 1
@@ -85,8 +86,29 @@ metadata:
 spec:
   selector:
     app: n8n
-  type: NodePort
+  type: LoadBalancer
   ports:
     - port: 5678
       targetPort: 5678
       protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: n8n
+  namespace: namespaces
+  labels:
+    app: n8n
+    managed-by: portainer-idp
+spec:
+  rules:
+    - host: n8n.heyronmar.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: n8n
+                port:
+                  number: 5678
