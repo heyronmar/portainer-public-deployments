@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: n8n-n8n-data
+  namespace: namespaces
+  labels:
+    app: n8n
+    managed-by: portainer-idp
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n
+  namespace: namespaces
+  labels:
+    app: n8n
+    managed-by: portainer-idp
+  annotations:
+    portainer-idp/git-target-id: '1'
+    portainer-idp/git-branch: main
+    portainer-idp/git-path: target-space/namespaces/n8n.yml
+    portainer-idp/deploy-type: manifest-builder
+    portainer-idp/edge-stack: 'true'
+    portainer-idp/edge-group-ids: '28'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: n8n
+  template:
+    metadata:
+      labels:
+        app: n8n
+        managed-by: portainer-idp
+    spec:
+      containers:
+        - name: n8n
+          image: n8nio/n8n:2.41.5
+          ports:
+            - containerPort: 5678
+          env:
+            - name: N8N_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-auth
+                  key: encryption-key
+            - name: N8N_SECURE_COOKIE
+              value: 'false'
+            - name: N8N_DIAGNOSTICS_ENABLED
+              value: 'false'
+          volumeMounts:
+            - name: n8n-data
+              mountPath: /home/node/.n8n
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: '1'
+              memory: 1Gi
+      volumes:
+        - name: n8n-data
+          persistentVolumeClaim:
+            claimName: n8n-n8n-data
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+  strategy:
+    type: Recreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: n8n
+  namespace: namespaces
+  labels:
+    app: n8n
+    managed-by: portainer-idp
+spec:
+  selector:
+    app: n8n
+  type: NodePort
+  ports:
+    - port: 5678
+      targetPort: 5678
+      protocol: TCP
