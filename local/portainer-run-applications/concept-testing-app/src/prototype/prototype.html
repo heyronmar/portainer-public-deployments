@@ -1,0 +1,457 @@
+<title>Portainer V3 Concept Test</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: fixed step sidebar (left) + one question panel (right); stacks to a top stepper on phones. shadcn/zinc-style tokens with Portainer blue accent. */
+:root{
+  --bg:#ffffff; --muted:#f4f5f7; --card:#ffffff; --fg:#0c111b; --fg-muted:#5b6474;
+  --border:#e3e6eb; --ring:#0b8fd6; --accent:#0b8fd6; --accent-fg:#ffffff; --accent-soft:#e6f4fc;
+  --pos:#1a7f4b; --pos-soft:#e7f6ee; --neg:#b4372f; --neg-soft:#fcecea;
+  --font:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:8px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0a0d12; --muted:#131820; --card:#0f141b; --fg:#eef1f5; --fg-muted:#949eae;
+  --border:#232a35; --ring:#3fb4f0; --accent:#3fb4f0; --accent-fg:#06121b; --accent-soft:#0f2433;
+  --pos:#5ccf8f; --pos-soft:#11261b; --neg:#f08178; --neg-soft:#2b1513; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0a0d12; --muted:#131820; --card:#0f141b; --fg:#eef1f5; --fg-muted:#949eae;
+  --border:#232a35; --ring:#3fb4f0; --accent:#3fb4f0; --accent-fg:#06121b; --accent-soft:#0f2433;
+  --pos:#5ccf8f; --pos-soft:#11261b; --neg:#f08178; --neg-soft:#2b1513; color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.55}
+h1,h2,h3{margin:0;text-wrap:balance;letter-spacing:-.01em}
+p{margin:0}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+
+.app{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:100%}
+aside{border-right:1px solid var(--border);background:var(--muted);padding-block:24px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:20px;display:flex;flex-direction:column;gap:24px;position:sticky;top:0;height:100vh;height:100dvh}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{width:28px;height:28px;border-radius:6px;background:var(--accent);color:var(--accent-fg);display:grid;place-items:center;font-weight:700;font-size:13px}
+.brand b{display:block;font-size:14px}
+.brand span{font-size:12px;color:var(--fg-muted)}
+.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--fg-muted);font-weight:500}
+ol.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+ol.steps button{all:unset;box-sizing:border-box;width:100%;display:grid;grid-template-columns:24px 1fr;gap:10px;align-items:start;padding:8px 10px;border-radius:6px;cursor:pointer}
+ol.steps button:hover:not([disabled]){background:var(--card)}
+ol.steps button:focus-visible{outline:2px solid var(--ring)}
+ol.steps button[disabled]{cursor:not-allowed;opacity:.55}
+ol.steps li[aria-current="step"] button{background:var(--card);box-shadow:0 0 0 1px var(--border)}
+.dot{width:24px;height:24px;border-radius:50%;border:1px solid var(--border);display:grid;place-items:center;font-size:11px;font-family:var(--mono);background:var(--bg)}
+li[aria-current="step"] .dot{border-color:var(--accent);color:var(--accent)}
+li.done .dot{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.s-title{font-weight:500;font-size:13px;display:block}
+.s-sub{font-size:12px;color:var(--fg-muted);display:block}
+.aside-foot{margin-top:auto;display:flex;flex-direction:column;gap:10px;font-size:12px;color:var(--fg-muted)}
+.progress{height:6px;border-radius:99px;background:var(--border);overflow:hidden}
+.progress i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.save{display:flex;align-items:center;gap:6px}
+.save::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--fg-muted)}
+.save[data-s="ok"]::before{background:var(--pos)}
+.save[data-s="local"]::before{background:#d39b1d}
+
+main{padding-block:40px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));min-width:0}
+.panel{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+.head{display:flex;flex-direction:column;gap:8px}
+.head h1{font-size:26px;font-weight:600}
+.head p{color:var(--fg-muted);max-width:62ch}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:16px}
+.field{display:flex;flex-direction:column;gap:8px}
+label.l,.l{font-weight:500;font-size:14px}
+.hint{font-size:12.5px;color:var(--fg-muted)}
+.req{color:var(--neg)}
+input[type=text],input[type=email],textarea,select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 12px;min-height:38px;outline:none;transition:border-color .15s,box-shadow .15s}
+input:focus,textarea:focus,select:focus{border-color:var(--ring);box-shadow:0 0 0 3px var(--accent-soft)}
+textarea{min-height:88px;resize:vertical}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.chip{all:unset;box-sizing:border-box;cursor:pointer;border:1px solid var(--border);border-radius:6px;padding:7px 12px;background:var(--bg);font-size:13.5px;transition:background .12s,border-color .12s}
+.chip:hover{border-color:var(--fg-muted)}
+.chip:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--fg)}
+.scale{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:6px}
+.scale .chip{text-align:center;font-family:var(--mono);padding:9px 0}
+.scale-ends{display:flex;justify-content:space-between;font-size:12px;color:var(--fg-muted)}
+
+.words{display:flex;flex-wrap:wrap;gap:8px}
+.word{all:unset;box-sizing:border-box;cursor:pointer;padding:8px 14px;border-radius:999px;border:1px solid var(--border);background:var(--bg);font-size:13.5px;font-weight:500;transition:all .12s}
+.word:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.word:hover{border-color:var(--fg-muted)}
+.word.pos[aria-pressed="true"]{background:var(--pos-soft);border-color:var(--pos);color:var(--pos)}
+.word.neg[aria-pressed="true"]{background:var(--neg-soft);border-color:var(--neg);color:var(--neg)}
+.word[aria-disabled="true"]{opacity:.4;cursor:not-allowed}
+.group-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.count{font-family:var(--mono);font-size:12px;color:var(--fg-muted)}
+.why{display:grid;grid-template-columns:140px minmax(0,1fr);gap:12px;align-items:start}
+.tag{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-size:12.5px;font-weight:500;justify-self:start}
+.tag.pos{background:var(--pos-soft);color:var(--pos)}
+.tag.neg{background:var(--neg-soft);color:var(--neg)}
+.why textarea{min-height:64px}
+
+.demo{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;background:var(--accent-soft);border-color:var(--accent)}
+.demo code{font-family:var(--mono);font-size:12.5px;color:var(--fg-muted);word-break:break-all}
+.tasks{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.check{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.check input{width:16px;height:16px;margin-top:3px;accent-color:var(--accent)}
+
+.btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;padding:0 16px;border-radius:6px;font-weight:500;font-size:14px;white-space:nowrap;transition:opacity .12s,background .12s}
+.btn:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.btn-primary{background:var(--fg);color:var(--bg)}
+.btn-primary:hover{opacity:.9}
+.btn-accent{background:var(--accent);color:var(--accent-fg)}
+.btn-outline{border:1px solid var(--border);background:var(--bg)}
+.btn-outline:hover{background:var(--muted)}
+.btn-ghost{color:var(--fg-muted)}
+.btn-ghost:hover{color:var(--fg);background:var(--muted)}
+.btn[aria-disabled="true"]{opacity:.45;cursor:not-allowed}
+.actions{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:20px}
+.err{color:var(--neg);font-size:13px}
+
+.done-wrap{text-align:left;align-items:flex-start}
+.badge{display:inline-flex;gap:6px;align-items:center;font-size:12px;padding:3px 8px;border-radius:99px;border:1px solid var(--border);color:var(--fg-muted)}
+
+/* researcher view */
+.r-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.stat{border:1px solid var(--border);border-radius:var(--r);padding:14px;background:var(--card)}
+.stat b{display:block;font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--fg-muted)}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
+th{font-weight:500;color:var(--fg-muted);background:var(--muted);font-size:12px}
+tr:last-child td{border-bottom:none}
+.wf{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.bar{display:grid;grid-template-columns:110px minmax(0,1fr) 28px;gap:8px;align-items:center;font-size:12.5px}
+.bar i{display:block;height:8px;border-radius:4px}
+.bar .t{text-align:right;font-family:var(--mono);color:var(--fg-muted)}
+.empty{color:var(--fg-muted);padding:20px;text-align:center}
+
+@media (max-width:860px){
+  .app{grid-template-columns:1fr}
+  aside{position:static;height:auto;border-right:none;border-bottom:1px solid var(--border);padding-right:max(16px,env(safe-area-inset-right,0px));padding-left:max(16px,env(safe-area-inset-left,0px));gap:16px}
+  ol.steps{flex-direction:row;overflow-x:auto;gap:6px;padding-bottom:4px}
+  ol.steps li{flex:0 0 auto}
+  ol.steps button{grid-template-columns:24px auto;padding:6px 10px}
+  .s-sub{display:none}
+  .aside-foot{margin-top:0}
+  main{padding-block:28px 48px}
+  .why{grid-template-columns:1fr}
+  .demo{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app">
+  <aside>
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">P</div>
+      <div><b>Portainer V3</b><span>Concept test · self-paced</span></div>
+    </div>
+    <nav aria-label="Session steps">
+      <div class="eyebrow" style="margin-bottom:8px">Your session</div>
+      <ol class="steps" id="steps"></ol>
+    </nav>
+    <div class="aside-foot">
+      <div class="progress" aria-hidden="true"><i id="prog" style="width:0%"></i></div>
+      <div id="progTxt">0 of 6 steps complete</div>
+      <div class="save" id="save" data-s="local">Saved on this device</div>
+      <button class="btn btn-ghost" id="researcherBtn" hidden style="justify-content:flex-start;padding:0 8px">View responses</button>
+    </div>
+  </aside>
+  <main><div class="panel" id="panel"></div></main>
+</div>
+
+<script>
+const DEMO_URL = "https://portainer-laptop.heyronmar.com";
+const POS = ["Intuitive","Clean","Efficient","Fast","Organized","Powerful","Reliable","Easy to use","Modern","Consistent","Clear","Flexible","Polished","Time-saving","Trustworthy","Approachable"];
+const NEG = ["Cluttered","Confusing","Overwhelming","Slow","Outdated","Complex","Inconsistent","Frustrating","Hard to navigate","Busy","Rigid","Tedious","Hidden","Too technical","Fragmented","Dense"];
+const PICK_MIN = 1, PICK_MAX = 3;
+
+const STEPS = [
+  {key:"current", title:"Current Portainer", sub:"How it feels today"},
+  {key:"wordsBefore", title:"Pick words", sub:"Current UI"},
+  {key:"demo", title:"Explore V3", sub:"Open the demo"},
+  {key:"wordsAfter", title:"Pick words", sub:"V3 UI"},
+  {key:"final", title:"Final thoughts", sub:"Anything else"},
+  {key:"swag", title:"Claim your swag", sub:"Shipping details"},
+];
+
+const blank = () => ({
+  step:0, completed:[], openedDemo:false, startedAt:new Date().toISOString(), submittedAt:null,
+  a:{
+    role:"", usage:"", edition:"", frequency:"", satisfaction:null, ease:null, likes:"", frustrations:"",
+    wordsBefore:{pos:[],neg:[],why:{}},
+    demoTasks:[], demoNotes:"",
+    wordsAfter:{pos:[],neg:[],why:{}},
+    preference:"", nps:null, finalNotes:"", followUp:"",
+    swag:{name:"",email:"",company:"",address:"",city:"",postcode:"",country:"",size:"",consent:false}
+  }
+});
+
+let S = blank();
+let db = null, uid = null, docRef = null, user = null;
+let view = "session"; // or "researcher"
+let errors = "";
+
+/* ---------- persistence ---------- */
+const LS = "portainer-v3-ct";
+function saveLocal(){ try{ localStorage.setItem(LS, JSON.stringify(S)); }catch(e){} }
+function loadLocal(){ try{ const v = JSON.parse(localStorage.getItem(LS)||"null"); if(v&&v.a) S = deepMerge(blank(), v); }catch(e){} }
+function deepMerge(base, v){ for(const k in v){ if(v[k]&&typeof v[k]==="object"&&!Array.isArray(v[k])&&base[k]&&typeof base[k]==="object") base[k]=deepMerge(base[k],v[k]); else base[k]=v[k]; } return base; }
+
+let writing = Promise.resolve();
+function persist(){
+  S.updatedAt = new Date().toISOString();
+  saveLocal();
+  if(!docRef){ setSave("local","Saved on this device"); return; }
+  setSave("", "Saving…");
+  const body = JSON.parse(JSON.stringify(S));
+  writing = writing.then(()=>docRef.set(body)).then(()=>setSave("ok","Progress saved")).catch(()=>setSave("local","Saved on this device only"));
+}
+function setSave(s,t){ const el=document.getElementById("save"); el.dataset.s=s; el.textContent=t; }
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const isDone = i => S.completed.includes(i);
+const unlocked = i => i===0 || isDone(i-1) || isDone(i) || i<=S.step;
+
+function chips(name, opts, val){
+  return `<div class="seg" role="group">${opts.map(o=>`<button type="button" class="chip" data-set="${name}" data-v="${esc(o)}" aria-pressed="${val===o}">${esc(o)}</button>`).join("")}</div>`;
+}
+function scale(name, n, start, val, lo, hi){
+  const items=[]; for(let i=start;i<start+n;i++) items.push(`<button type="button" class="chip" data-set="${name}" data-v="${i}" data-num="1" aria-pressed="${val===i}" aria-label="${i}">${i}</button>`);
+  return `<div class="scale" style="--n:${n}" role="group">${items.join("")}</div><div class="scale-ends"><span>${lo}</span><span>${hi}</span></div>`;
+}
+function get(path){ return path.split(".").reduce((o,k)=>o?.[k], S.a); }
+function set(path, v){ const ks=path.split("."); const last=ks.pop(); ks.reduce((o,k)=>o[k],S.a)[last]=v; saveLocal(); }
+
+/* ---------- step renderers ---------- */
+function stepCurrent(){
+  const a=S.a;
+  return `
+  <div class="head"><span class="eyebrow">Step 1 of 6</span><h1>How does Portainer feel today?</h1>
+  <p>Thanks for helping shape Portainer V3. This session takes about 15 minutes and you can stop any time: your answers are saved as you go, so you can come back to where you left off.</p></div>
+  <div class="card">
+    <div class="grid2">
+      <div class="field"><label class="l" for="role">Your role <span class="req">*</span></label>
+        <select id="role" data-bind="role"><option value="">Select…</option>${["Platform / DevOps engineer","Developer","SRE / Ops","IT administrator","Engineering manager","Homelab / hobbyist","Other"].map(o=>`<option ${a.role===o?"selected":""}>${o}</option>`).join("")}</select></div>
+      <div class="field"><label class="l" for="usage">How long have you used Portainer? <span class="req">*</span></label>
+        <select id="usage" data-bind="usage"><option value="">Select…</option>${["Less than 6 months","6–12 months","1–3 years","3+ years"].map(o=>`<option ${a.usage===o?"selected":""}>${o}</option>`).join("")}</select></div>
+    </div>
+    <div class="field"><span class="l">Which edition do you use?</span>${chips("edition",["Community Edition","Business Edition","Both","Not sure"],a.edition)}</div>
+    <div class="field"><span class="l">How often do you use it?</span>${chips("frequency",["Daily","Weekly","Monthly","Rarely"],a.frequency)}</div>
+  </div>
+  <div class="card">
+    <div class="field"><span class="l">Overall, how satisfied are you with the current Portainer UI? <span class="req">*</span></span>${scale("satisfaction",5,1,a.satisfaction,"Very dissatisfied","Very satisfied")}</div>
+    <div class="field"><span class="l">How easy is it to get everyday tasks done? <span class="req">*</span></span>${scale("ease",7,1,a.ease,"Very difficult","Very easy")}</div>
+  </div>
+  <div class="card">
+    <div class="field"><label class="l" for="likes">What do you like most about the current UI?</label><textarea id="likes" data-bind="likes" placeholder="e.g. Deploying a stack is quick once I know where things are">${esc(a.likes)}</textarea></div>
+    <div class="field"><label class="l" for="frus">What frustrates you most? <span class="req">*</span></label><textarea id="frus" data-bind="frustrations" placeholder="e.g. Finding the right environment takes too many clicks">${esc(a.frustrations)}</textarea></div>
+  </div>`;
+}
+function validCurrent(){ const a=S.a; if(!a.role||!a.usage||!a.satisfaction||!a.ease||!a.frustrations.trim()) return "Please answer the questions marked with *."; }
+
+function stepWords(which){
+  const w=S.a[which], isBefore=which==="wordsBefore";
+  const grp=(kind,list)=>{
+    const picked=w[kind], full=picked.length>=PICK_MAX;
+    return `<div class="field"><div class="group-h"><span class="l">${kind==="pos"?"Positive words":"Negative words"}</span><span class="count">${picked.length}/${PICK_MAX} picked</span></div>
+      <div class="words">${list.map(x=>{const on=picked.includes(x);return `<button type="button" class="word ${kind}" data-word="${esc(x)}" data-kind="${kind}" data-which="${which}" aria-pressed="${on}" ${!on&&full?'aria-disabled="true"':""}>${esc(x)}</button>`}).join("")}</div></div>`;
+  };
+  const all=[...w.pos.map(x=>["pos",x]),...w.neg.map(x=>["neg",x])];
+  return `
+  <div class="head"><span class="eyebrow">Step ${isBefore?2:4} of 6</span><h1>${isBefore?"Describe the current Portainer UI":"Now describe the V3 UI"}</h1>
+  <p>Pick ${PICK_MIN}–${PICK_MAX} positive and ${PICK_MIN}–${PICK_MAX} negative words that best describe ${isBefore?"your experience with Portainer today":"what you saw in the V3 demo"}. Then tell us why you picked each one.</p></div>
+  <div class="card">${grp("pos",POS)}${grp("neg",NEG)}</div>
+  ${all.length?`<div class="card"><span class="l">Why did you pick these?</span>
+    ${all.map(([k,x])=>`<div class="why"><span class="tag ${k}">${esc(x)}</span><textarea id="why-${which}-${esc(x).replace(/\W/g,"")}" data-why="${esc(x)}" data-which="${which}" placeholder="What made it feel ${esc(x.toLowerCase())}?">${esc(w.why[x]||"")}</textarea></div>`).join("")}
+  </div>`:""}`;
+}
+function validWords(which){ const w=S.a[which];
+  if(w.pos.length<PICK_MIN||w.neg.length<PICK_MIN) return "Pick at least one positive and one negative word.";
+  if([...w.pos,...w.neg].some(x=>!(w.why[x]||"").trim())) return "Add a short reason for each word you picked.";
+}
+
+const TASKS = ["Look around the home dashboard","Find and open an environment","Find a running container or workload","Try deploying or editing something","Look for settings or user management"];
+function stepDemo(){
+  const a=S.a;
+  return `
+  <div class="head"><span class="eyebrow">Step 3 of 6</span><h1>Explore the Portainer V3 demo</h1>
+  <p>The demo opens in a new tab. Take 5–10 minutes to click around and get a feel for it. Nothing you do there affects a real system. When you're done, come back to this tab and continue.</p></div>
+  <div class="card demo">
+    <div style="display:flex;flex-direction:column;gap:4px;min-width:0"><b>Portainer V3 demo</b><code>${esc(DEMO_URL.replace("https://",""))}</code>
+      ${S.openedDemo?`<span class="hint">Opened. Switch back to that tab any time.</span>`:""}</div>
+    <a class="btn btn-accent" href="${DEMO_URL}" target="_blank" rel="noopener" id="openDemo">${S.openedDemo?"Open again":"Open demo in new tab"} ↗</a>
+  </div>
+  <div class="card">
+    <div class="field"><span class="l">Some things to try</span><span class="hint">A loose guide, not a test. Tick what you tried.</span></div>
+    ${TASKS.map((t,i)=>`<label class="check"><input type="checkbox" id="task${i}" data-task="${esc(t)}" ${a.demoTasks.includes(t)?"checked":""}><span>${t}</span></label>`).join("")}
+    <div class="field"><label class="l" for="dn">Anything you noticed while exploring?</label><textarea id="dn" data-bind="demoNotes" placeholder="First impressions, surprises, things you couldn't find">${esc(a.demoNotes)}</textarea></div>
+  </div>`;
+}
+function validDemo(){ if(!S.openedDemo) return "Open the demo first. It opens in a new tab so you won't lose your place."; }
+
+function stepFinal(){
+  const a=S.a;
+  return `
+  <div class="head"><span class="eyebrow">Step 5 of 6</span><h1>Final thoughts</h1><p>Last few questions, comparing what you use today with V3.</p></div>
+  <div class="card">
+    <div class="field"><span class="l">Which would you rather use day to day? <span class="req">*</span></span>${chips("preference",["Current Portainer","Portainer V3","No preference"],a.preference)}</div>
+    <div class="field"><span class="l">How likely are you to recommend Portainer V3 to a colleague? <span class="req">*</span></span>${scale("nps",11,0,a.nps,"Not at all likely","Extremely likely")}</div>
+  </div>
+  <div class="card">
+    <div class="field"><label class="l" for="fn">Is there anything else you'd like the team to know?</label><textarea id="fn" data-bind="finalNotes" placeholder="What should we keep, change, or add before V3 ships?">${esc(a.finalNotes)}</textarea></div>
+    <div class="field"><span class="l">Can we follow up with you about your answers?</span>${chips("followUp",["Yes, happy to chat","No thanks"],a.followUp)}</div>
+  </div>`;
+}
+function validFinal(){ if(!S.a.preference||S.a.nps===null) return "Please answer the questions marked with *."; }
+
+function stepSwag(){
+  const s=S.a.swag;
+  const inp=(id,label,type="text",req=true,ph="")=>`<div class="field"><label class="l" for="sw-${id}">${label}${req?' <span class="req">*</span>':""}</label><input type="${type}" id="sw-${id}" data-bind="swag.${id}" value="${esc(s[id])}" placeholder="${ph}" autocomplete="${{name:"name",email:"email",company:"organization",address:"street-address",city:"address-level2",postcode:"postal-code",country:"country-name"}[id]||"off"}"></div>`;
+  return `
+  <div class="head"><span class="eyebrow">Step 6 of 6</span><h1>Claim your Portainer swag</h1><p>Thanks for your time. Tell us where to send a thank-you pack. We only use these details to ship your swag${S.a.followUp==="Yes, happy to chat"?" and to follow up as you agreed":""}.</p></div>
+  <div class="card">
+    <div class="grid2">${inp("name","Full name")}${inp("email","Email","email")}</div>
+    ${inp("company","Company","text",false)}
+    ${inp("address","Street address","text",true,"Street, unit, building")}
+    <div class="grid2">${inp("city","City")}${inp("postcode","Postcode")}</div>
+    ${inp("country","Country")}
+    <div class="field"><span class="l">T-shirt size <span class="req">*</span></span>${chips("swag.size",["XS","S","M","L","XL","2XL","3XL"],s.size)}</div>
+    <label class="check"><input type="checkbox" id="consent" data-consent ${s.consent?"checked":""}><span>I agree that Portainer can use these details to ship my swag. <span class="req">*</span></span></label>
+  </div>`;
+}
+function validSwag(){ const s=S.a.swag;
+  if(["name","email","address","city","postcode","country","size"].some(k=>!String(s[k]).trim())) return "Please fill in the fields marked with *.";
+  if(!/^\S+@\S+\.\S+$/.test(s.email)) return "That email address doesn't look right. Check for typos.";
+  if(!s.consent) return "Please tick the consent box so we can ship your swag.";
+}
+
+function stepDone(){
+  return `<div class="head done-wrap"><span class="badge">Session complete</span><h1>Thank you${S.a.swag.name?", "+esc(S.a.swag.name.split(" ")[0]):""}</h1>
+  <p>Your feedback has been recorded and your swag request is in. You can go back to any step to review or change an answer until we close the study.</p></div>
+  <div class="card"><span class="l">What you told us</span>
+    <div class="grid2">
+      <div><span class="hint">Current UI</span><div class="words" style="margin-top:6px">${[...S.a.wordsBefore.pos.map(x=>`<span class="tag pos">${esc(x)}</span>`),...S.a.wordsBefore.neg.map(x=>`<span class="tag neg">${esc(x)}</span>`)].join("")}</div></div>
+      <div><span class="hint">V3 UI</span><div class="words" style="margin-top:6px">${[...S.a.wordsAfter.pos.map(x=>`<span class="tag pos">${esc(x)}</span>`),...S.a.wordsAfter.neg.map(x=>`<span class="tag neg">${esc(x)}</span>`)].join("")}</div></div>
+    </div>
+  </div>`;
+}
+
+const R = [
+  [stepCurrent, validCurrent],
+  [()=>stepWords("wordsBefore"), ()=>validWords("wordsBefore")],
+  [stepDemo, validDemo],
+  [()=>stepWords("wordsAfter"), ()=>validWords("wordsAfter")],
+  [stepFinal, validFinal],
+  [stepSwag, validSwag],
+];
+
+/* ---------- render ---------- */
+function renderSidebar(){
+  $("#steps").innerHTML = STEPS.map((s,i)=>`<li class="${isDone(i)?"done":""}" ${view==="session"&&S.step===i?'aria-current="step"':""}>
+    <button type="button" data-go="${i}" ${unlocked(i)?"":"disabled"}><span class="dot">${isDone(i)?"✓":i+1}</span><span><span class="s-title">${s.title}</span><span class="s-sub">${s.sub}</span></span></button></li>`).join("");
+  const n=S.completed.length; $("#prog").style.width=(n/6*100)+"%"; $("#progTxt").textContent=`${n} of 6 steps complete`;
+}
+function render(){
+  renderSidebar();
+  if(view==="researcher"){ renderResearcher(); return; }
+  const i=S.step;
+  const body = i>=6 ? stepDone() : R[i][0]();
+  const nav = i>=6 ? `<div class="actions"><button class="btn btn-outline" data-go="5">Review answers</button></div>` :
+    `<div class="actions"><div>${i>0?`<button class="btn btn-ghost" data-back>← Back</button>`:""}</div>
+     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">${errors?`<span class="err" role="alert">${esc(errors)}</span>`:""}
+     <button class="btn btn-primary" data-next>${i===5?"Submit":"Continue →"}</button></div></div>`;
+  $("#panel").innerHTML = body + nav;
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click", e=>{
+  const t=e.target.closest("button,a"); if(!t) return;
+  if(t.dataset.set){ const v=t.dataset.num?Number(t.dataset.v):t.dataset.v; set(t.dataset.set, get(t.dataset.set)===v?(t.dataset.num?null:""):v); errors=""; keepScroll(render); return; }
+  if(t.dataset.word){ if(t.getAttribute("aria-disabled")==="true") return;
+    const w=S.a[t.dataset.which], arr=w[t.dataset.kind], x=t.dataset.word, ix=arr.indexOf(x);
+    if(ix>=0) arr.splice(ix,1); else if(arr.length<PICK_MAX) arr.push(x);
+    saveLocal(); errors=""; keepScroll(render); return; }
+  if(t.id==="openDemo"){ if(!S.openedDemo){ S.openedDemo=true; persist(); setTimeout(()=>keepScroll(render),50);} return; }
+  if(t.dataset.go!==undefined){ view="session"; errors=""; S.step=Number(t.dataset.go); persist(); render(); window.scrollTo(0,0); return; }
+  if(t.hasAttribute("data-back")){ errors=""; S.step=Math.max(0,S.step-1); persist(); render(); window.scrollTo(0,0); return; }
+  if(t.hasAttribute("data-next")){
+    const err=R[S.step][1](); if(err){ errors=err; keepScroll(render); return; }
+    errors=""; if(!S.completed.includes(S.step)) S.completed.push(S.step);
+    if(S.step===5) S.submittedAt=new Date().toISOString();
+    S.step = S.step+1;
+    persist(); render(); window.scrollTo(0,0); return; }
+  if(t.id==="researcherBtn"){ view = view==="researcher"?"session":"researcher"; t.textContent = view==="researcher"?"Back to session":"View responses"; render(); window.scrollTo(0,0); }
+});
+document.addEventListener("input", e=>{
+  const t=e.target;
+  if(t.dataset.bind){ set(t.dataset.bind, t.value); }
+  else if(t.dataset.why){ S.a[t.dataset.which].why[t.dataset.why]=t.value; saveLocal(); }
+});
+document.addEventListener("change", e=>{
+  const t=e.target;
+  if(t.dataset.task){ const arr=S.a.demoTasks, ix=arr.indexOf(t.dataset.task); if(t.checked&&ix<0) arr.push(t.dataset.task); if(!t.checked&&ix>=0) arr.splice(ix,1); saveLocal(); }
+  if(t.hasAttribute("data-consent")){ S.a.swag.consent=t.checked; saveLocal(); }
+  if(t.tagName==="SELECT"||t.tagName==="TEXTAREA"||t.tagName==="INPUT") persist();
+});
+function keepScroll(fn){ const y=window.scrollY; const id=document.activeElement?.id; fn(); window.scrollTo(0,y); if(id) document.getElementById(id)?.focus({preventScroll:true}); }
+
+/* ---------- researcher view (owner / editors only) ---------- */
+let responses=[], unsub=null;
+function watchResponses(){
+  if(unsub||!db) return;
+  unsub = db.collection("responses").onSnapshot(q=>{ responses=q.docs.map(d=>({id:d.id,...d.data()})); if(view==="researcher") render(); }, ()=>{});
+}
+function freq(key,kind){ const m={}; responses.forEach(r=>(r.a?.[key]?.[kind]||[]).forEach(w=>m[w]=(m[w]||0)+1)); return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,6); }
+function bars(list,kind){ const max=Math.max(1,...list.map(x=>x[1])); return list.length?list.map(([w,n])=>`<div class="bar"><span>${esc(w)}</span><i style="width:${n/max*100}%;background:var(--${kind})"></i><span class="t">${n}</span></div>`).join(""):`<span class="hint">No picks yet</span>`; }
+function renderResearcher(){
+  const done=responses.filter(r=>r.submittedAt).length;
+  const avg=k=>{const v=responses.map(r=>r.a?.[k]).filter(x=>typeof x==="number"); return v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):"–";};
+  const pref=p=>responses.filter(r=>r.a?.preference===p).length;
+  $("#panel").innerHTML = `
+  <div class="head"><span class="eyebrow">Researcher view · only you and editors see this</span><h1>Responses</h1><p>Live from the study database. Participants only ever see their own answers.</p></div>
+  <div class="r-stats">
+    <div class="stat"><b>${responses.length}</b><span>Started</span></div>
+    <div class="stat"><b>${done}</b><span>Completed</span></div>
+    <div class="stat"><b>${avg("satisfaction")}</b><span>Avg satisfaction today (1–5)</span></div>
+    <div class="stat"><b>${pref("Portainer V3")} / ${pref("Current Portainer")}</b><span>Prefer V3 / current</span></div>
+  </div>
+  <div class="wf">
+    <div class="card"><span class="l">Current UI</span>${bars(freq("wordsBefore","pos"),"pos")}${bars(freq("wordsBefore","neg"),"neg")}</div>
+    <div class="card"><span class="l">V3 UI</span>${bars(freq("wordsAfter","pos"),"pos")}${bars(freq("wordsAfter","neg"),"neg")}</div>
+  </div>
+  <div class="tbl-wrap"><table><thead><tr><th>Participant</th><th>Role</th><th>Progress</th><th>Sat.</th><th>Ease</th><th>Prefers</th><th>Recommend</th><th>Swag size</th><th>Updated</th></tr></thead>
+  <tbody>${responses.length?responses.sort((a,b)=>(b.updatedAt||"").localeCompare(a.updatedAt||"")).map(r=>`<tr>
+    <td>${esc(r.a?.swag?.name||"Anonymous")}</td><td>${esc(r.a?.role||"–")}</td><td>${r.submittedAt?"Complete":`${(r.completed||[]).length}/6`}</td>
+    <td>${r.a?.satisfaction??"–"}</td><td>${r.a?.ease??"–"}</td><td>${esc(r.a?.preference||"–")}</td><td>${r.a?.nps??"–"}</td><td>${esc(r.a?.swag?.size||"–")}</td>
+    <td>${r.updatedAt?new Date(r.updatedAt).toLocaleString():"–"}</td></tr>`).join(""):`<tr><td colspan="9" class="empty">No responses yet. Share this page with participants to start collecting.</td></tr>`}</tbody></table></div>`;
+}
+
+/* ---------- boot ---------- */
+loadLocal(); render();
+(async()=>{
+  try{
+    const [d,u] = await Promise.all([claude.use("db"), claude.use("user")]);
+    user=u;
+    if(u && (u.isOwner?.() || u.canEdit?.())){ const b=$("#researcherBtn"); b.hidden=false; }
+    if(!d||!u) return;
+    uid = await u.id(); if(!uid) return;
+    db=d; docRef=db.doc("responses/"+uid);
+    let timer=setTimeout(()=>setSave("local","Saved on this device"),10000);
+    const snap=await docRef.get(); clearTimeout(timer);
+    if(snap.exists){ const remote=snap.data(); if(!S.updatedAt || (remote.updatedAt||"")>=(S.updatedAt||"")) { S=deepMerge(blank(), JSON.parse(JSON.stringify(remote))); saveLocal(); render(); } }
+    setSave("ok","Progress saved");
+    if(!$("#researcherBtn").hidden) watchResponses();
+  }catch(e){ setSave("local","Saved on this device"); }
+})();
+</script>
