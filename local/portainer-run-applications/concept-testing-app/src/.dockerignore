@@ -9,7 +9,7 @@ data
 !.env.example
 npm-debug.log*
 Dockerfile
-docker-compose.yml
+k8s
 .dockerignore
 README.md
 prototype

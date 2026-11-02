@@ -2,15 +2,15 @@
 
 A self-service, self-paced concept test for the Portainer V3 UI. Participants work through six steps (current Portainer, pick words, explore the V3 demo, pick words again, final thoughts, claim swag), can leave and come back to the same step, and can continue on another device with a resume link. Researchers see results at `/admin` and can export a CSV.
 
-Built with Next.js (App Router, standalone output), Tailwind + shadcn/ui, and SQLite (better-sqlite3). It ships as a single container with a named volume for the database.
+Built with Next.js (App Router, standalone output), Tailwind + shadcn/ui, and SQLite (better-sqlite3). It ships as a single container image and runs on Kubernetes with a persistent volume for the database (`k8s/concept-test.yaml`).
 
 ## Configuration
 
 | Variable         | Default                                  | Purpose                                                        |
 | ---------------- | ---------------------------------------- | -------------------------------------------------------------- |
 | `DEMO_URL`       | `https://portainer-laptop.heyronmar.com` | Where the "Open demo" button sends participants                |
-| `DATABASE_PATH`  | `/data/concept-test.db`                  | SQLite file. In Docker it sits on the `/data` volume.          |
-| `ADMIN_USER`     | `admin` (in compose)                     | Basic-auth user for `/admin`                                   |
+| `DATABASE_PATH`  | `/data/concept-test.db`                  | SQLite file. In the container it sits on the `/data` volume.   |
+| `ADMIN_USER`     | _(none)_                                 | Basic-auth user for `/admin`. `/admin` is disabled until this is set. |
 | `ADMIN_PASSWORD` | _(none)_                                 | Basic-auth password for `/admin`. `/admin` is disabled until this is set. |
 | `PORT`           | `3000`                                   | Port the app listens on                                        |
 
@@ -31,43 +31,46 @@ Open <http://localhost:3000> for the participant flow and <http://localhost:3000
 
 Other scripts: `npm run build`, `npm run lint`.
 
-## Run with Docker Compose
+## Container image
+
+The image is built from the `Dockerfile` (multi-stage, `node:22-bookworm-slim`, runs as the non-root `node` user, data at `/data`) and published to `ghcr.io/heyronmar/concept-testing-app`. A GitHub Actions workflow in [portainer-public-deployments](https://github.com/heyronmar/portainer-public-deployments) builds it for `linux/amd64` and `linux/arm64` on every push that changes the app, and tags it `latest` plus the commit SHA.
+
+To run the image locally:
 
 ```bash
-cp .env.example .env        # set ADMIN_PASSWORD (and DEMO_URL if needed)
-docker compose up -d --build
+docker build -t concept-test .
+docker run -d -p 3000:3000 -v concept-test-data:/data \
+  -e ADMIN_USER=admin -e ADMIN_PASSWORD='<password>' concept-test
 ```
 
-The app is on <http://localhost:3000> (change it with `HOST_PORT`). Data is stored in the named volume `concept-test-data` and survives restarts and rebuilds. The container has a healthcheck against `GET /api/health`.
+## Deploy on Kubernetes (Portainer-IDP)
+
+`k8s/concept-test.yaml` holds the PersistentVolumeClaim (1Gi, ReadWriteOnce), Deployment, Service and Ingress. It deploys into the `namespaces` namespace, with host `concept-test.heyronmar.com` on the cluster's default ingress class.
+
+1. Create the admin credentials Secret. It is kept out of git on purpose:
+
+   ```bash
+   kubectl -n namespaces create secret generic concept-test-admin \
+     --from-literal=username=admin --from-literal=password='<password>'
+   ```
+
+   With sealed-secrets, seal the same Secret and commit the SealedSecret instead.
+2. Deploy the manifest from git in Portainer (point it at `k8s/concept-test.yaml`), or run `kubectl apply -f k8s/concept-test.yaml`.
+3. Check it: `kubectl -n namespaces get pods -l app=concept-test`. The readiness and liveness probes call `GET /api/health`.
+
+Notes:
+
+- **One replica only.** SQLite is a single file on a ReadWriteOnce volume, so the Deployment uses the `Recreate` strategy.
+- **Data lives on the PVC.** Redeploys and image updates keep it. Deleting the PVC deletes all responses, so export the CSV first.
+- **Updating.** The Deployment pulls `:latest` with `imagePullPolicy: Always`. After a new image is published, restart the pod (`kubectl -n namespaces rollout restart deploy/concept-test`), or pin a SHA tag in the manifest to roll forward through git.
+- **HTTPS.** Serve it over TLS at the ingress before sharing the link. The participant cookie is marked `Secure` when the ingress sends `X-Forwarded-Proto: https`, and basic auth should only travel over TLS.
+- **Changing the host or namespace.** Edit `metadata.namespace` on all four resources and `spec.rules[0].host` on the Ingress.
 
 To back up the database:
 
 ```bash
-docker compose cp concept-test:/data/concept-test.db ./concept-test-backup.db
+kubectl -n namespaces cp "$(kubectl -n namespaces get pod -l app=concept-test -o name | cut -d/ -f2)":/data/concept-test.db ./concept-test-backup.db
 ```
-
-## Deploy in Portainer (stack from Git)
-
-1. Push this repository to a Git host Portainer can reach.
-2. In Portainer, open the environment, then go to **Stacks → Add stack**.
-3. Name the stack (for example `concept-test`) and choose **Repository** as the build method.
-4. Set **Repository URL** to this repo and **Repository reference** to the branch (for example `refs/heads/main`). Add credentials if the repo is private.
-5. Set **Compose path** to `docker-compose.yml`.
-6. Under **Environment variables**, add:
-   - `ADMIN_PASSWORD`: a strong password (required for `/admin`)
-   - `ADMIN_USER`: optional, defaults to `admin`
-   - `DEMO_URL`: optional, defaults to the V3 demo
-   - `HOST_PORT`: optional, defaults to `3000`
-7. Optional: turn on **GitOps updates** so Portainer redeploys when the branch changes.
-8. Click **Deploy the stack**. Portainer builds the image from the `Dockerfile` and creates the `concept-test-data` volume, mounted at `/data`.
-
-The volume is what keeps responses. Redeploying or updating the stack keeps it. Removing the stack and its volumes deletes all responses, so export the CSV (or copy the `.db` file) first.
-
-Put the app behind HTTPS (a reverse proxy or ingress) before sharing it. The participant cookie is marked `Secure` when the proxy sends `X-Forwarded-Proto: https`, and basic auth should only travel over TLS.
-
-### Portainer-IDP
-
-The image is self-contained: one container, one port (3000), one volume at `/data`, and env vars for config. Any platform that can build from the `Dockerfile` (or run a pre-built image) and mount a persistent volume at `/data` can run it. Keep it to **one replica**: SQLite is a single file on a single volume.
 
 ## How it works
 
@@ -89,5 +92,6 @@ src/app/r/[id]/route.ts            resume link
 src/app/admin/                     researcher dashboard, participant detail, export.csv
 src/app/api/health/route.ts        healthcheck
 src/proxy.ts                       basic auth for /admin
+k8s/concept-test.yaml              Kubernetes manifest (PVC, Deployment, Service, Ingress)
 prototype/prototype.html           original single-file prototype (reference for flow and copy)
 ```
