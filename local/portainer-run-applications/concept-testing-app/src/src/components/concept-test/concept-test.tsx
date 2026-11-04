@@ -1,11 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { Check, Copy, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { DONE_STEP, STEPS, STEP_COUNT, isDone, isUnlocked, validateStep, type Errors, type State } from "@/lib/survey";
+import { DONE_STEP, STEPS, STEP_COUNT, isDone, isUnlocked, validateIntro, validateStep, type Errors, type State } from "@/lib/survey";
+import { FieldError } from "./fields";
 import { StepCurrent, StepDemo, StepDone, StepFinal, StepSwag, StepWords, type StepProps } from "./steps";
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
@@ -112,6 +115,17 @@ export function ConceptTest() {
     );
   }
 
+  if (!s.introDone) {
+    const startTest = () => {
+      if (Object.keys(validateIntro(s)).length) { setShowErrors(true); return; }
+      setShowErrors(false);
+      set((d) => { d.a.swag.email = d.a.swag.email.trim(); d.introDone = true; }, true);
+      window.scrollTo(0, 0);
+    };
+    return <Intro email={s.a.swag.email} error={showErrors ? validateIntro(s)["swag.email"] : undefined} notice={notice}
+      onChange={(v) => set((d) => { d.a.swag.email = v; })} onBlur={saveOnBlur} onContinue={startTest} />;
+  }
+
   const step = s.step;
   const errors: Errors = showErrors && step < DONE_STEP ? validateStep(s, step) : {};
 
@@ -173,22 +187,22 @@ export function ConceptTest() {
     <div className="grid min-h-dvh grid-cols-[minmax(0,1fr)] md:grid-cols-[280px_minmax(0,1fr)]">
       <Sidebar s={s} id={session.id} status={status} onGo={goTo} />
       <main className="min-w-0 px-4 pt-7 pb-12 md:pt-10 md:pb-16">
-        <div className="mx-auto flex max-w-[720px] flex-col gap-7">
+        <div key={step} className="mx-auto flex max-w-[760px] flex-col gap-6">
           {notice && <p role="status" className="rounded-lg border border-border bg-muted px-4 py-3 text-[13px]">{notice}</p>}
           {body}
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
             {step >= DONE_STEP ? (
-              <Button variant="outline" size="lg" className="h-9 px-4" onClick={() => goTo(STEP_COUNT - 1)}>Review answers</Button>
+              <Button variant="outline" size="lg" className="h-11 rounded-full px-6" onClick={() => goTo(STEP_COUNT - 1)}>Review answers</Button>
             ) : (
               <>
-                <div>{step > 0 && <Button variant="ghost" size="lg" className="h-9 px-4 text-muted-foreground" onClick={() => goTo(step - 1)}>← Back</Button>}</div>
+                <div>{step > 0 && <Button variant="ghost" size="lg" className="h-11 rounded-full px-5 text-muted-foreground" onClick={() => goTo(step - 1)}>← Back</Button>}</div>
                 <div className="flex flex-wrap items-center gap-3">
                   {(hasErrors || submitError) && (
                     <span role="alert" className="text-[13px] text-neg">
                       {submitError || (step === 2 ? errors.openedDemo : "Please fix the highlighted questions.")}
                     </span>
                   )}
-                  <Button size="lg" className="h-9 px-4" onClick={next} disabled={submitting}>
+                  <Button size="lg" className="h-11 rounded-full bg-brand px-7 text-[15px] text-brand-foreground hover:bg-brand/90" onClick={next} disabled={submitting}>
                     {submitting && <Loader2 className="animate-spin" />}
                     {step === STEP_COUNT - 1 ? "Submit" : "Continue →"}
                   </Button>
@@ -202,12 +216,39 @@ export function ConceptTest() {
   );
 }
 
+function Intro({ email, error, notice, onChange, onBlur, onContinue }: {
+  email: string; error?: string; notice: string; onChange: (v: string) => void; onBlur: () => void; onContinue: () => void;
+}) {
+  return (
+    <main className="grid min-h-dvh place-items-center px-4 py-10">
+      <form noValidate onSubmit={(e) => { e.preventDefault(); onContinue(); }} className="flex w-full max-w-[420px] flex-col items-center gap-6 text-center">
+        <Image src="/logo/portainer.svg" alt="Portainer" width={64} height={64} unoptimized priority className="size-16" />
+        <div className="flex flex-col gap-2">
+          <h1 className="text-[26px] font-semibold tracking-tight text-balance">Help us shape Portainer Experience</h1>
+          <p className="text-muted-foreground">
+            This session takes about 15–30 minutes and you can stop any time: your answers are saved as you go, so you can come back to where you left off.
+          </p>
+        </div>
+        {notice && <p role="status" className="w-full rounded-lg border border-border bg-muted px-4 py-3 text-[13px]">{notice}</p>}
+        <div data-field="swag.email" className="flex w-full flex-col gap-2 text-left">
+          <label htmlFor="intro-email" className="text-sm font-medium">Email address<span className="text-neg"> *</span></label>
+          <Input id="intro-email" type="email" autoComplete="email" inputMode="email" value={email} placeholder="you@company.com" className="h-9"
+            aria-invalid={!!error || undefined} aria-describedby={error ? "swag.email-error" : undefined}
+            onChange={(e) => onChange(e.target.value)} onBlur={onBlur} />
+          <FieldError name="swag.email" error={error} />
+        </div>
+        <Button type="submit" size="lg" className="h-9 w-full px-4">Continue →</Button>
+      </form>
+    </main>
+  );
+}
+
 function Sidebar({ s, id, status, onGo }: { s: State; id: string; status: SaveStatus; onGo: (i: number) => void }) {
   const n = s.completed.length;
   return (
     <aside className="flex min-w-0 flex-col gap-4 border-b border-border bg-muted px-4 py-5 md:sticky md:top-0 md:h-dvh md:gap-6 md:border-r md:border-b-0 md:px-5 md:py-6">
       <div className="flex items-center gap-2.5">
-        <div aria-hidden className="grid size-7 place-items-center rounded-md bg-brand text-[13px] font-bold text-brand-foreground">P</div>
+        <Image src="/logo/portainer.svg" alt="" width={32} height={32} unoptimized className="size-8" />
         <div className="leading-tight">
           <b className="block text-sm">Portainer V3</b>
           <span className="text-xs text-muted-foreground">Concept test · self-paced</span>
@@ -244,14 +285,19 @@ function Sidebar({ s, id, status, onGo }: { s: State; id: string; status: SaveSt
         </ol>
       </nav>
       <div className="flex flex-col gap-2.5 text-xs text-muted-foreground md:mt-auto">
-        <Progress value={(n / STEP_COUNT) * 100} className="h-1.5 bg-border *:data-[slot=progress-indicator]:bg-brand" aria-label="Progress" />
-        <div>{n} of {STEP_COUNT} steps complete</div>
+        <Progress value={(n / STEP_COUNT) * 100} className="h-2 bg-border *:data-[slot=progress-indicator]:bg-brand" aria-label="Progress" />
+        <div className="flex items-baseline justify-between gap-2">
+          <span>{n} of {STEP_COUNT} steps complete</span>
+          <span className="font-medium text-brand">{cheer(n)}</span>
+        </div>
         <SaveIndicator status={status} />
         <ResumeLink id={id} />
       </div>
     </aside>
   );
 }
+
+const cheer = (n: number) => (n === 0 ? "Let's go!" : n < 3 ? "Nice start" : n === 3 ? "Halfway there" : n < STEP_COUNT ? "Almost done" : "All done!");
 
 function SaveIndicator({ status }: { status: SaveStatus }) {
   const text = { idle: "Not saved yet", saving: "Saving…", saved: "Progress saved", error: "Not saved. Check your connection." }[status];

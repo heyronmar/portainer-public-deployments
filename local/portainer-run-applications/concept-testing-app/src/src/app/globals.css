@@ -16,6 +16,8 @@
   --color-pos-soft: var(--pos-soft);
   --color-neg: var(--neg);
   --color-neg-soft: var(--neg-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-geist-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -56,6 +58,21 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Playful motion. Components only use these behind motion-safe:. */
+@theme {
+  --animate-pop: pop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-float: float 4s ease-in-out infinite;
+  --animate-rise: rise 0.45s ease-out both;
+  --animate-confetti: confetti 1.8s ease-in forwards;
+  @keyframes pop { 0% { transform: scale(0.92); } 60% { transform: scale(1.06); } 100% { transform: scale(1); } }
+  @keyframes float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6px; } }
+  @keyframes rise { from { opacity: 0; translate: 0 10px; } to { opacity: 1; translate: 0 0; } }
+  @keyframes confetti {
+    0% { opacity: 1; transform: translate3d(0, 0, 0) rotate(0); }
+    100% { opacity: 0; transform: translate3d(var(--dx), 260px, 0) rotate(var(--rot)); }
+  }
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -88,6 +105,8 @@
   --pos-soft: #e7f6ee;
   --neg: #b4372f;
   --neg-soft: #fcecea;
+  --warn: #a8650b;
+  --warn-soft: #fdf3e1;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -108,6 +127,8 @@
   --pos-soft: #11261b;
   --neg: #f08178;
   --neg-soft: #2b1513;
+  --warn: #f2b45a;
+  --warn-soft: #2a1f0d;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);

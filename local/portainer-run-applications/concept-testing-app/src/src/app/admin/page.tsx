@@ -65,7 +65,7 @@ function Row({ r }: { r: ResponseRow }) {
   return (
     <ParticipantRow href={href}>
       <TableCell>
-        <Link href={href} className="font-medium underline-offset-4 hover:underline">{a.swag.name || "Anonymous"}</Link>
+        <Link href={href} className="font-medium underline-offset-4 hover:underline">{a.swag.name || a.swag.email || "Anonymous"}</Link>
         <span className="ml-2 font-mono text-xs text-muted-foreground">{r.id.slice(0, 6)}</span>
       </TableCell>
       <TableCell>{dash(a.role)}</TableCell>

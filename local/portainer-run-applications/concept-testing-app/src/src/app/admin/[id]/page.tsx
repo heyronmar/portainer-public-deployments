@@ -30,7 +30,7 @@ async function Participant({ params }: { params: PageProps<"/admin/[id]">["param
       <Link href="/admin" className="text-[13px] text-muted-foreground hover:text-foreground">← All responses</Link>
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-[26px] font-semibold tracking-tight">{sw.name || "Anonymous participant"}</h1>
+          <h1 className="text-[26px] font-semibold tracking-tight">{sw.name || sw.email || "Anonymous participant"}</h1>
           {r.submittedAt ? <Badge className="bg-pos-soft text-pos">Complete</Badge> : <Badge variant="outline">In progress · {progressLabel(r)}</Badge>}
         </div>
         <p className="font-mono text-xs text-muted-foreground">

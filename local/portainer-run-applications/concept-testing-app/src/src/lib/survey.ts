@@ -16,12 +16,12 @@ export const FOLLOW_UP = ["Yes, happy to chat", "No thanks"];
 export const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL"];
 
 export const STEPS = [
-  { key: "current", title: "Current Portainer", sub: "How it feels today" },
-  { key: "wordsBefore", title: "Pick words", sub: "Current UI" },
-  { key: "demo", title: "Explore V3", sub: "Open the demo" },
-  { key: "wordsAfter", title: "Pick words", sub: "V3 UI" },
-  { key: "final", title: "Final thoughts", sub: "Anything else" },
-  { key: "swag", title: "Claim your swag", sub: "Shipping details" },
+  { key: "current", title: "Current Portainer", sub: "How it feels today", mins: 3 },
+  { key: "wordsBefore", title: "Pick words", sub: "Current UI", mins: 2 },
+  { key: "demo", title: "Explore V3", sub: "Open the demo", mins: 10 },
+  { key: "wordsAfter", title: "Pick words", sub: "V3 UI", mins: 2 },
+  { key: "final", title: "Final thoughts", sub: "Anything else", mins: 2 },
+  { key: "swag", title: "Claim your swag", sub: "Shipping details", mins: 1 },
 ] as const;
 export const STEP_COUNT = STEPS.length;
 export const DONE_STEP = STEP_COUNT; // step index of the thank-you screen
@@ -40,12 +40,14 @@ export type Answers = {
 };
 export type State = {
   step: number; completed: number[]; openedDemo: boolean;
+  /** Passed the intro screen (email entered). */
+  introDone: boolean;
   startedAt: string; submittedAt: string | null; updatedAt?: string;
   a: Answers;
 };
 
 export const blank = (): State => ({
-  step: 0, completed: [], openedDemo: false, startedAt: new Date().toISOString(), submittedAt: null,
+  step: 0, completed: [], openedDemo: false, introDone: false, startedAt: new Date().toISOString(), submittedAt: null,
   a: {
     role: "", usage: "", edition: "", frequency: "", satisfaction: null, ease: null, likes: "", frustrations: "",
     wordsBefore: { pos: [], neg: [], why: {} },
@@ -81,6 +83,7 @@ export function sanitize(input: unknown): State {
     step: intIn(s.step, 0, DONE_STEP) ?? 0,
     completed: Array.isArray(s.completed) ? [...new Set(s.completed.filter((i): i is number => intIn(i, 0, STEP_COUNT - 1) !== null))].sort() : [],
     openedDemo: s.openedDemo === true,
+    introDone: s.introDone === true,
     startedAt: str(s.startedAt, 40) || b.startedAt,
     submittedAt: str(s.submittedAt, 40) || null,
     updatedAt: str(s.updatedAt, 40) || undefined,
@@ -104,6 +107,14 @@ export function sanitize(input: unknown): State {
 /** Field key -> message. Empty object means the step is valid. */
 export type Errors = Record<string, string>;
 const REQUIRED = "This question is required.";
+const EMAIL = /^\S+@\S+\.\S+$/;
+
+/** The intro asks for an email first. It is stored as the swag email, so step 6 starts prefilled. */
+export function validateIntro(s: State): Errors {
+  const email = s.a.swag.email.trim();
+  if (!email) return { "swag.email": "Enter your email address." };
+  return EMAIL.test(email) ? {} : { "swag.email": "That email address doesn't look right. Check for typos." };
+}
 
 function validCurrent(s: State): Errors {
   const a = s.a, e: Errors = {};
@@ -138,7 +149,7 @@ export const SWAG_REQUIRED = ["name", "email", "address", "city", "postcode", "c
 function validSwag(s: State): Errors {
   const sw = s.a.swag, e: Errors = {};
   for (const k of SWAG_REQUIRED) if (!sw[k].trim()) e[`swag.${k}`] = "This field is required.";
-  if (!e["swag.email"] && !/^\S+@\S+\.\S+$/.test(sw.email.trim())) e["swag.email"] = "That email address doesn't look right. Check for typos.";
+  if (!e["swag.email"] && !EMAIL.test(sw.email.trim())) e["swag.email"] = "That email address doesn't look right. Check for typos.";
   if (!sw.size) e["swag.size"] = "Pick a t-shirt size.";
   if (!sw.consent) e["swag.consent"] = "Please tick the consent box so we can ship your swag.";
   return e;
