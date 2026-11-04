@@ -51,7 +51,7 @@ spec:
         - name: concept-test
           # Pinned to a build so every update is a manifest change that rolls out a new pod.
           # Tags are sha-<commit in portainer-public-deployments>; see README "Updating".
-          image: ghcr.io/heyronmar/concept-testing-app:sha-0a39c3b3686927eb42e592b8f1bcd06b61168395
+          image: ghcr.io/heyronmar/concept-testing-app:sha-eb5549daeb8fb0345e37554d1bd458338e030d15
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
