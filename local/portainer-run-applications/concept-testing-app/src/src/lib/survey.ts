@@ -126,10 +126,10 @@ function validCurrent(s: State): Errors {
   return e;
 }
 
+/** Positive words are required; negative words are optional (some people have none). */
 function validWords(s: State, which: WordKey): Errors {
   const w = s.a[which], e: Errors = {};
   if (w.pos.length < PICK_MIN) e[`${which}.pos`] = "Pick at least one positive word.";
-  if (w.neg.length < PICK_MIN) e[`${which}.neg`] = "Pick at least one negative word.";
   for (const x of [...w.pos, ...w.neg]) if (!(w.why[x] || "").trim()) e[`${which}.why.${x}`] = "Add a short reason for this word.";
   return e;
 }

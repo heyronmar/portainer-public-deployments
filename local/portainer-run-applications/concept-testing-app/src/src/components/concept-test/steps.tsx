@@ -152,7 +152,7 @@ export function StepWords({ which, ...p }: StepProps & { which: WordKey }) {
             <span aria-hidden className={cn("grid size-9 place-items-center rounded-xl", kind === "pos" ? "bg-pos-soft text-pos" : "bg-neg-soft text-neg")}>
               {kind === "pos" ? <ThumbsUp className="size-4.5" /> : <ThumbsDown className="size-4.5" />}
             </span>
-            <span id={`${key}-label`} className="text-[15px] font-semibold">{kind === "pos" ? "Positive words" : "Negative words"}<span className="text-neg"> *</span></span>
+            <span id={`${key}-label`} className="text-[15px] font-semibold">{kind === "pos" ? <>Positive words<span className="text-neg"> *</span></> : <>Negative words <span className="font-normal text-muted-foreground">(optional)</span></>}</span>
           </span>
           <span className="flex items-center gap-2 text-xs text-muted-foreground">
             <span aria-hidden className="flex gap-1">
@@ -177,7 +177,7 @@ export function StepWords({ which, ...p }: StepProps & { which: WordKey }) {
   return (
     <>
       <Head step={before ? 2 : 4} title={before ? "Describe the current Portainer UI" : "Now describe the V3 UI"}>
-        Pick {PICK_MIN}–{PICK_MAX} positive and {PICK_MIN}–{PICK_MAX} negative words that best describe {before ? "your experience with Portainer today" : "what you saw in the V3 demo"}. Then tell us why you picked each one.
+        Pick {PICK_MIN}–{PICK_MAX} positive words and, if any apply, up to {PICK_MAX} negative words that best describe {before ? "your experience with Portainer today" : "what you saw in the V3 demo"}. Then tell us why you picked each one.
       </Head>
       <Panel>{group("pos", POS)}{group("neg", NEG)}</Panel>
       {all.length > 0 && (
