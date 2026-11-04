@@ -62,7 +62,7 @@ Notes:
 
 - **One replica only.** SQLite is a single file on a ReadWriteOnce volume, so the Deployment uses the `Recreate` strategy.
 - **Data lives on the PVC.** Redeploys and image updates keep it. Deleting the PVC deletes all responses, so export the CSV first.
-- **Updating.** The Deployment pulls `:latest` with `imagePullPolicy: Always`. After a new image is published, restart the pod (`kubectl -n namespaces rollout restart deploy/concept-test`), or pin a SHA tag in the manifest to roll forward through git.
+- **Updating.** The manifest pins the image to a build tag (`sha-<commit>`, where the commit is the push to portainer-public-deployments that built it). After the workflow publishes a new image, change the tag in `k8s/concept-test.yaml` and commit; the changed manifest rolls out a new pod. Restarting the app without changing the tag keeps the running version.
 - **HTTPS.** Serve it over TLS at the ingress before sharing the link. The participant cookie is marked `Secure` when the ingress sends `X-Forwarded-Proto: https`, and basic auth should only travel over TLS.
 - **Changing the host or namespace.** Edit `metadata.namespace` on all four resources and `spec.rules[0].host` on the Ingress.
 
