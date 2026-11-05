@@ -50,6 +50,11 @@ function Head({ step, title, eyebrow, children }: { step?: number; title: ReactN
   );
 }
 
+/** Friendly line beside the step chip. */
+const Cheer = ({ children }: { children: ReactNode }) => (
+  <span className="inline-flex items-center gap-1 text-brand"><Sparkles className="size-3.5" />{children}</span>
+);
+
 const ic = "size-5";
 const EDITION_ICONS = { "Community Edition": <Users className={ic} />, "Business Edition": <Briefcase className={ic} />, Both: <Layers className={ic} />, "Not sure": <CircleHelp className={ic} /> };
 const FREQUENCY_ICONS = { Daily: <Sun className={ic} />, Weekly: <CalendarDays className={ic} />, Monthly: <CalendarRange className={ic} />, Rarely: <Snail className={ic} /> };
@@ -94,7 +99,7 @@ export function StepCurrent(p: StepProps) {
   const { s, set, errors: e } = p, a = s.a;
   return (
     <>
-      <Head step={1} title="How does Portainer feel today?" eyebrow={<span className="text-muted-foreground">Nice to meet you!</span>}>
+      <Head step={1} title="How does Portainer feel today?" eyebrow={<Cheer>Nice to meet you!</Cheer>}>
         Let&apos;s start with the Portainer you use today. There are no wrong answers, just your honest take.
       </Head>
       <Panel>
@@ -176,7 +181,7 @@ export function StepWords({ which, ...p }: StepProps & { which: WordKey }) {
   const all = [...w.pos.map((x) => ["pos", x] as const), ...w.neg.map((x) => ["neg", x] as const)];
   return (
     <>
-      <Head step={before ? 2 : 4} title={before ? "Describe the current Portainer UI" : "Now describe the V3 UI"}>
+      <Head step={before ? 2 : 4} title={before ? "Describe the current Portainer UI" : "Now describe the V3 UI"} eyebrow={<Cheer>{before ? "Quick one" : "Before vs after"}</Cheer>}>
         Pick {PICK_MIN}–{PICK_MAX} positive words and, if any apply, up to {PICK_MAX} negative words that best describe {before ? "your experience with Portainer today" : "what you saw in the V3 demo"}. Then tell us why you picked each one.
       </Head>
       <Panel>{group("pos", POS)}{group("neg", NEG)}</Panel>
@@ -212,8 +217,8 @@ export function StepDemo(p: StepProps) {
   const { s, set, errors: e, demoUrl } = p, a = s.a;
   return (
     <>
-      <Head step={3} title="Explore the Portainer V3 demo">
-        The demo opens in a new tab. Take 5–10 minutes to click around and get a feel for it. Nothing you do there affects a real system. When you&apos;re done, come back to this tab and continue.
+      <Head step={3} title="Take Portainer V3 for a spin" eyebrow={<Cheer>The fun part</Cheer>}>
+        The demo opens in a new tab. Spend 5–10 minutes clicking around and poke at anything you like: it&apos;s a sandbox, so you can&apos;t break anything real. Come back to this tab when you&apos;re done.
       </Head>
       <div data-field="openedDemo" className="flex flex-col gap-2">
         <Panel className="grid items-center gap-6 border-2 border-brand/40 bg-brand-soft sm:grid-cols-[auto_minmax(0,1fr)]">
@@ -262,7 +267,7 @@ export function StepFinal(p: StepProps) {
   const { s, set, errors: e } = p, a = s.a;
   return (
     <>
-      <Head step={5} title="Final thoughts">Last few questions, comparing what you use today with V3.</Head>
+      <Head step={5} title="Final thoughts" eyebrow={<Cheer>Almost at your swag</Cheer>}>A few last questions comparing what you use today with V3. Your swag is the next step.</Head>
       <Panel>
         <Field name="preference" label="Which would you rather use day to day?" required error={e.preference}>
           <Chips name="preference" options={PREFERENCES} icons={PREFERENCE_ICONS} cols="grid-cols-3 sm:grid-cols-3" value={a.preference} invalid={!!e.preference} onChange={(v) => set((d) => { d.a.preference = v; }, true)} />
@@ -309,8 +314,8 @@ export function StepSwag(p: StepProps) {
   };
   return (
     <>
-      <Head step={6} title="Claim your Portainer swag">
-        Thanks for your time. Tell us where to send a thank-you pack. We only use these details to ship your swag{s.a.followUp === "Yes, happy to chat" ? " and to follow up as you agreed" : ""}.
+      <Head step={6} title="Claim your free Portainer swag" eyebrow={<Cheer>You made it!</Cheer>}>
+        Thank you for sharing your time and honest feedback. Tell us where to send your t-shirt and swag pack. We only use these details to ship your swag{s.a.followUp === "Yes, happy to chat" ? " and to follow up as you agreed" : ""}.
       </Head>
       <Panel>
         <div className="grid gap-4 sm:grid-cols-2">{input("name", "Full name")}{input("email", "Email", { type: "email" })}</div>
@@ -350,7 +355,7 @@ export function StepDone({ s }: StepProps) {
       <div className="relative">
         <Confetti />
         <Head title={`Thank you${first ? `, ${first}` : ""}`} eyebrow={<Badge className="bg-pos text-white dark:text-background">Session complete</Badge>}>
-          Your feedback has been recorded and your swag request is in. You can go back to any step to review or change an answer until we close the study.
+          Your feedback is in and so is your swag request. You&apos;ve helped shape what Portainer V3 becomes. You can go back to any step to review or change an answer until we close the study.
         </Head>
       </div>
       <Panel>

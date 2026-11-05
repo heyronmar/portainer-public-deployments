@@ -1,6 +1,7 @@
 // Decorative graphics for the participant flow. All of it is aria-hidden: the questions carry the meaning.
 
 import type { CSSProperties } from "react";
+import Image from "next/image";
 import {
   Compass, Gauge, Gift, Heart, Lightbulb, MessageSquareText, MessagesSquare, MousePointerClick, Package, PartyPopper,
   Shirt, Sparkles, Star, ThumbsDown, ThumbsUp, Trophy, Zap, type LucideIcon,
@@ -32,6 +33,32 @@ export function StepArt({ step }: { step: number }) {
       <div className="absolute -bottom-1 -left-2 grid size-9 -rotate-12 place-items-center rounded-2xl bg-card text-warn shadow-md ring-1 ring-border motion-safe:animate-float motion-safe:[animation-delay:-2s] sm:size-10">
         <B className="size-4.5" />
       </div>
+    </div>
+  );
+}
+
+/** The thank-you pack: a Portainer t-shirt with stickers around it, for the intro. */
+export function SwagArt() {
+  return (
+    <div aria-hidden className="relative mx-auto size-52 sm:size-56">
+      <div className="absolute inset-4 rounded-full bg-brand-soft" />
+      <div className="absolute inset-9 rounded-full border-2 border-dashed border-brand/25 motion-safe:animate-[spin_40s_linear_infinite]" />
+      <div className="absolute inset-0 grid place-items-center motion-safe:animate-float">
+        <div className="relative w-36 -rotate-3 drop-shadow-xl sm:w-40">
+          <svg viewBox="0 0 120 110" className="w-full text-slate-900 dark:text-slate-700">
+            <path d="M40 6 L19 13 L3 34 L18 47 L28 40 L28 104 L92 104 L92 40 L102 47 L117 34 L101 13 L80 6 Q60 22 40 6 Z" fill="currentColor" />
+            <path d="M40 6 Q60 22 80 6" fill="none" stroke="white" strokeOpacity="0.25" strokeWidth="2.5" />
+          </svg>
+          <Image src="/logo/portainer.svg" alt="" width={36} height={36} unoptimized className="absolute top-[40%] left-1/2 size-8 -translate-x-1/2 rounded-md sm:size-9" />
+        </div>
+      </div>
+      <div className="absolute top-3 left-1 grid size-14 -rotate-12 place-items-center rounded-full bg-card font-mono text-lg font-bold text-brand shadow-md ring-2 ring-brand/30 motion-safe:animate-float motion-safe:[animation-delay:-1.5s]">V3</div>
+      <div className="absolute top-2 right-0 rotate-12 rounded-full bg-pos px-3 py-1.5 text-sm font-bold text-white shadow-md dark:text-background">Free!</div>
+      <div className="absolute right-1 bottom-6 grid size-12 rotate-6 place-items-center rounded-2xl bg-warn text-white shadow-md motion-safe:animate-float motion-safe:[animation-delay:-3s] dark:text-background">
+        <Gift className="size-6" />
+      </div>
+      <Sparkles className="absolute bottom-9 left-4 size-5 text-brand" />
+      <Star className="absolute top-1/2 -right-1 size-4 fill-warn text-warn" />
     </div>
   );
 }

@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { Check, Copy, Loader2 } from "lucide-react";
+import { Check, Clock, Compass, Copy, Gift, Loader2, MessageSquareText, PartyPopper, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { DONE_STEP, STEPS, STEP_COUNT, isDone, isUnlocked, validateIntro, validateStep, type Errors, type State } from "@/lib/survey";
+import { SwagArt } from "./art";
 import { FieldError } from "./fields";
 import { StepCurrent, StepDemo, StepDone, StepFinal, StepSwag, StepWords, type StepProps } from "./steps";
 
@@ -23,6 +24,8 @@ export function ConceptTest() {
   const [showErrors, setShowErrors] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  /** The step just completed with Continue, for the "nice work" banner on the next one. */
+  const [cheered, setCheered] = useState<number | null>(null);
   // The latest state, readable synchronously by save() right after a mutation.
   const ref = useRef<State | null>(null);
   const chain = useRef<Promise<unknown>>(Promise.resolve());
@@ -132,6 +135,7 @@ export function ConceptTest() {
   const goTo = (i: number) => {
     if (!isUnlocked(s, i) && i !== DONE_STEP) return;
     setShowErrors(false);
+    setCheered(null);
     set((d) => { d.step = i; }, true);
     window.scrollTo(0, 0);
   };
@@ -145,6 +149,7 @@ export function ConceptTest() {
     }
     setShowErrors(false);
     if (step < STEP_COUNT - 1) {
+      setCheered(step);
       set((d) => {
         if (!d.completed.includes(step)) d.completed.push(step);
         d.step = step + 1;
@@ -189,6 +194,12 @@ export function ConceptTest() {
       <main className="min-w-0 px-4 pt-7 pb-12 md:pt-10 md:pb-16">
         <div key={step} className="mx-auto flex max-w-[760px] flex-col gap-6">
           {notice && <p role="status" className="rounded-lg border border-border bg-muted px-4 py-3 text-[13px]">{notice}</p>}
+          {cheered === step - 1 && (
+            <p role="status" className="flex items-center gap-2.5 self-start rounded-full bg-pos-soft py-2 pr-4 pl-2.5 text-[14px] font-medium text-pos motion-safe:animate-pop">
+              <span className="grid size-7 place-items-center rounded-full bg-pos text-white dark:text-background"><PartyPopper className="size-4" /></span>
+              {STEP_CHEERS[cheered]}
+            </p>
+          )}
           {body}
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
             {step >= DONE_STEP ? (
@@ -203,8 +214,8 @@ export function ConceptTest() {
                     </span>
                   )}
                   <Button size="lg" className="h-11 rounded-full bg-brand px-7 text-[15px] text-brand-foreground hover:bg-brand/90" onClick={next} disabled={submitting}>
-                    {submitting && <Loader2 className="animate-spin" />}
-                    {step === STEP_COUNT - 1 ? "Submit" : "Continue →"}
+                    {submitting ? <Loader2 className="animate-spin" /> : step >= STEP_COUNT - 2 && <Gift />}
+                    {step === STEP_COUNT - 1 ? "Claim my swag" : step === STEP_COUNT - 2 ? "On to my swag" : "Continue →"}
                   </Button>
                 </div>
               </>
@@ -216,28 +227,51 @@ export function ConceptTest() {
   );
 }
 
+const INTRO_STEPS = [
+  { icon: MessageSquareText, text: "Tell us how Portainer feels today" },
+  { icon: Compass, text: "Take the V3 demo for a spin" },
+  { icon: Gift, text: "Claim your free swag" },
+];
+
 function Intro({ email, error, notice, onChange, onBlur, onContinue }: {
   email: string; error?: string; notice: string; onChange: (v: string) => void; onBlur: () => void; onContinue: () => void;
 }) {
   return (
-    <main className="grid min-h-dvh place-items-center px-4 py-10">
-      <form noValidate onSubmit={(e) => { e.preventDefault(); onContinue(); }} className="flex w-full max-w-[420px] flex-col items-center gap-6 text-center">
-        <Image src="/logo/portainer.svg" alt="Portainer" width={64} height={64} unoptimized priority className="size-16" />
-        <div className="flex flex-col gap-2">
-          <h1 className="text-[26px] font-semibold tracking-tight text-balance">Help us shape Portainer Experience</h1>
-          <p className="text-muted-foreground">
-            This session takes about 15–30 minutes and you can stop any time: your answers are saved as you go, so you can come back to where you left off.
+    <main className="grid min-h-dvh place-items-center bg-linear-to-b from-brand-soft/60 to-background px-4 py-10">
+      <form noValidate onSubmit={(e) => { e.preventDefault(); onContinue(); }} className="flex w-full max-w-[480px] flex-col items-center gap-6 text-center motion-safe:animate-rise">
+        <SwagArt />
+        {/* Wider than the form on larger screens so the title fits on one line and the description on two. */}
+        <div className="flex max-w-[calc(100vw-2rem)] flex-col gap-3 sm:w-[640px]">
+          <h1 className="text-[30px] leading-tight font-semibold tracking-tight text-balance sm:text-[34px] sm:whitespace-nowrap">Help us shape Portainer&apos;s Experience</h1>
+          <p className="text-[16px] text-muted-foreground text-pretty">
+            Be one of the first to try Portainer V3 and tell us what you really think. As a thank-you, we&apos;ll send you a Portainer t-shirt and swag pack.
           </p>
         </div>
+        <ol className="grid w-full max-w-[calc(100vw-2rem)] gap-2 sm:w-[680px] sm:grid-cols-3">
+          {INTRO_STEPS.map(({ icon: Icon, text }, i) => (
+            <li key={text} className="flex items-center gap-2.5 rounded-2xl border border-border bg-card px-3 py-3 text-left text-[13.5px] leading-snug font-medium text-balance">
+              <span className={cn("grid size-9 shrink-0 place-items-center rounded-full", i === 2 ? "bg-pos text-white dark:text-background" : "bg-brand-soft text-brand")}>
+                <Icon className="size-4.5" />
+              </span>
+              {text}
+            </li>
+          ))}
+        </ol>
         {notice && <p role="status" className="w-full rounded-lg border border-border bg-muted px-4 py-3 text-[13px]">{notice}</p>}
         <div data-field="swag.email" className="flex w-full flex-col gap-2 text-left">
-          <label htmlFor="intro-email" className="text-sm font-medium">Email address<span className="text-neg"> *</span></label>
-          <Input id="intro-email" type="email" autoComplete="email" inputMode="email" value={email} placeholder="you@company.com" className="h-9"
+          <label htmlFor="intro-email" className="text-[15px] font-semibold">Your email address<span className="text-neg"> *</span></label>
+          <Input id="intro-email" type="email" autoComplete="email" inputMode="email" value={email} placeholder="you@company.com" className="h-12 rounded-xl px-4 text-[16px] md:text-[16px]"
             aria-invalid={!!error || undefined} aria-describedby={error ? "swag.email-error" : undefined}
             onChange={(e) => onChange(e.target.value)} onBlur={onBlur} />
           <FieldError name="swag.email" error={error} />
         </div>
-        <Button type="submit" size="lg" className="h-9 w-full px-4">Continue →</Button>
+        <Button type="submit" size="lg" className="h-12 w-full rounded-full bg-brand text-[16px] text-brand-foreground shadow-lg shadow-brand/25 hover:bg-brand/90">
+          Let&apos;s start →
+        </Button>
+        <p className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[13px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5"><Clock className="size-3.5" />15–30 minutes</span>
+          <span className="inline-flex items-center gap-1.5"><Save className="size-3.5" />Pause any time: we save as you go</span>
+        </p>
       </form>
     </main>
   );
@@ -272,7 +306,7 @@ function Sidebar({ s, id, status, onGo }: { s: State; id: string; status: SaveSt
                     current && "border-brand text-brand",
                     done && "border-brand bg-brand text-brand-foreground",
                   )}>
-                    {done ? <Check className="size-3.5" aria-label="done" /> : i + 1}
+                    {done ? <Check className="size-3.5" aria-label="done" /> : i === STEP_COUNT - 1 ? <Gift className="size-3.5" aria-label={String(i + 1)} /> : i + 1}
                   </span>
                   <span className="whitespace-nowrap md:whitespace-normal">
                     <span className="block text-[13px] font-medium">{st.title}</span>
@@ -285,6 +319,7 @@ function Sidebar({ s, id, status, onGo }: { s: State; id: string; status: SaveSt
         </ol>
       </nav>
       <div className="flex flex-col gap-2.5 text-xs text-muted-foreground md:mt-auto">
+        <SwagGoal left={STEP_COUNT - n} />
         <Progress value={(n / STEP_COUNT) * 100} className="h-2 bg-border *:data-[slot=progress-indicator]:bg-brand" aria-label="Progress" />
         <div className="flex items-baseline justify-between gap-2">
           <span>{n} of {STEP_COUNT} steps complete</span>
@@ -294,6 +329,29 @@ function Sidebar({ s, id, status, onGo }: { s: State; id: string; status: SaveSt
         <ResumeLink id={id} />
       </div>
     </aside>
+  );
+}
+
+/** Shown after Continue on step i, at the top of step i + 1. */
+const STEP_CHEERS = [
+  "Step 1 done. Great start!",
+  "Nice picks! Now for the fun part.",
+  "Thanks for exploring. Just a few quick ones left.",
+  "Two steps to go. Your swag is in sight.",
+  "Last stop: tell us where to send your swag.",
+];
+
+function SwagGoal({ left }: { left: number }) {
+  return (
+    <div className="hidden items-center gap-3 rounded-xl border border-border bg-card p-3 md:flex">
+      <span className={cn("grid size-9 shrink-0 place-items-center rounded-lg", left ? "bg-warn-soft text-warn motion-safe:animate-float" : "bg-pos text-white dark:text-background")}>
+        <Gift className="size-4.5" />
+      </span>
+      <span className="leading-snug">
+        <b className="block text-[13px] text-foreground">{left ? "Free swag at the finish" : "Swag claimed!"}</b>
+        {left ? `${left} step${left === 1 ? "" : "s"} to go` : "Thanks for taking part"}
+      </span>
+    </div>
   );
 }
 
