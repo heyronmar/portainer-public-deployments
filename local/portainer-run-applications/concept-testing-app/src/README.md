@@ -8,6 +8,7 @@ Built with Next.js (App Router, standalone output), Tailwind + shadcn/ui, and SQ
 
 | Variable         | Default                                  | Purpose                                                        |
 | ---------------- | ---------------------------------------- | -------------------------------------------------------------- |
+| `SITE_URL`       | _(the request's domain)_                 | Public URL for link previews, canonical URL, robots.txt and sitemap.xml. Leave unset to use whichever domain the visitor came in on. |
 | `DEMO_URL`       | `https://portainer-laptop.heyronmar.com` | Where the "Open demo" button sends participants                |
 | `DATABASE_PATH`  | `/data/concept-test.db`                  | SQLite file. In the container it sits on the `/data` volume.   |
 | `ADMIN_USER`     | _(none)_                                 | Basic-auth user for `/admin`. `/admin` is disabled until this is set. |
