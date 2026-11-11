@@ -1,8 +1,8 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
-  Briefcase, CalendarDays, Check, CalendarRange, CircleHelp, Clock, ExternalLink, Hand, History, Layers, MessageCircleHeart,
+  Briefcase, CalendarDays, Check, CalendarRange, CircleHelp, Clock, Copy, ExternalLink, KeyRound, Hand, History, Layers, MessageCircleHeart,
   Scale as ScaleIcon, Shirt, Snail, Sparkles, Sun, ThumbsDown, ThumbsUp, Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +26,10 @@ export type StepProps = {
   save: () => void;
   errors: Errors;
   demoUrl: string;
+  demoLogin: DemoLogin | null;
 };
+
+export type DemoLogin = { user: string; password: string };
 
 /** Step header: a big card with the step's illustration. `step` is 1-based; omit it on the thank-you screen. */
 function Head({ step, title, eyebrow, children }: { step?: number; title: ReactNode; eyebrow?: ReactNode; children?: ReactNode }) {
@@ -214,7 +217,7 @@ export function StepWords({ which, ...p }: StepProps & { which: WordKey }) {
 /* ---------- 3. Explore V3 ---------- */
 
 export function StepDemo(p: StepProps) {
-  const { s, set, errors: e, demoUrl } = p, a = s.a;
+  const { s, set, errors: e, demoUrl, demoLogin } = p, a = s.a;
   return (
     <>
       <Head step={3} title="Take Portainer V3 for a spin" eyebrow={<Cheer>The fun part</Cheer>}>
@@ -235,6 +238,15 @@ export function StepDemo(p: StepProps) {
             </a>
           </Button>
           </div>
+          {demoLogin && (
+            <div className="flex flex-col gap-3 rounded-xl bg-card p-4 ring-1 ring-border sm:col-span-2">
+              <span className="flex items-center gap-2 text-[14px] font-semibold"><KeyRound className="size-4 text-brand" />Sign in to the demo with</span>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <CopyField label="Username" value={demoLogin.user} />
+                <CopyField label="Password" value={demoLogin.password} />
+              </div>
+            </div>
+          )}
         </Panel>
         <FieldError name="openedDemo" error={e.openedDemo} />
       </div>
@@ -366,6 +378,31 @@ export function StepDone({ s }: StepProps) {
         </div>
       </Panel>
     </>
+  );
+}
+
+/** A read-only value with a copy button, e.g. the demo sign-in. */
+function CopyField({ label, value }: { label: string; value: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(value); } catch { return; }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <button type="button" onClick={copy} aria-label={`Copy ${label.toLowerCase()}`}
+      className={cn(
+        "flex min-w-0 items-center justify-between gap-3 rounded-xl border-2 border-border bg-background px-3.5 py-2.5 text-left transition-colors outline-none hover:border-brand focus-visible:ring-3 focus-visible:ring-ring/50",
+        copied && "border-pos bg-pos-soft",
+      )}>
+      <span className="flex min-w-0 flex-col">
+        <span className="text-xs text-muted-foreground">{label}</span>
+        <span className="truncate font-mono text-[15px] font-semibold">{value}</span>
+      </span>
+      <span role="status" className={cn("inline-flex shrink-0 items-center gap-1 text-[13px] font-medium", copied ? "text-pos" : "text-brand")}>
+        {copied ? <><Check className="size-4" strokeWidth={3} />Copied</> : <><Copy className="size-4" />Copy</>}
+      </span>
+    </button>
   );
 }
 

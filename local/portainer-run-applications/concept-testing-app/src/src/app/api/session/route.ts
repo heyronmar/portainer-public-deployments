@@ -4,12 +4,17 @@ import { COOKIE, setIdCookie } from "@/lib/session";
 import { DONE_STEP, STEP_COUNT, sanitize, validateStep } from "@/lib/survey";
 
 const demoUrl = () => process.env.DEMO_URL || "https://portainer-laptop.heyronmar.com";
+/** Sign-in shown on the demo step. Hidden unless both are set. */
+const demoLogin = () => {
+  const user = process.env.DEMO_USER, password = process.env.DEMO_PASSWORD;
+  return user && password ? { user, password } : null;
+};
 
 /** Resume the participant from their cookie, or start a new response. */
 export async function POST(req: NextRequest) {
   const existing = getResponse(req.cookies.get(COOKIE)?.value ?? "");
   const row = existing ?? createResponse();
-  const res = NextResponse.json({ id: row.id, state: row.state, demoUrl: demoUrl(), created: !existing });
+  const res = NextResponse.json({ id: row.id, state: row.state, demoUrl: demoUrl(), demoLogin: demoLogin(), created: !existing });
   setIdCookie(req, res, row.id);
   return res;
 }

@@ -10,10 +10,10 @@ import { cn } from "@/lib/utils";
 import { DONE_STEP, STEPS, STEP_COUNT, isDone, isUnlocked, validateIntro, validateStep, type Errors, type State } from "@/lib/survey";
 import { SwagArt } from "./art";
 import { FieldError } from "./fields";
-import { StepCurrent, StepDemo, StepDone, StepFinal, StepSwag, StepWords, type StepProps } from "./steps";
+import { StepCurrent, StepDemo, StepDone, StepFinal, StepSwag, StepWords, type DemoLogin, type StepProps } from "./steps";
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
-type Session = { id: string; demoUrl: string };
+type Session = { id: string; demoUrl: string; demoLogin: DemoLogin | null };
 
 export function ConceptTest() {
   const [session, setSession] = useState<Session | null>(null);
@@ -37,7 +37,7 @@ export function ConceptTest() {
       .then((json) => {
         ref.current = json.state;
         setS(json.state);
-        setSession({ id: json.id, demoUrl: json.demoUrl });
+        setSession({ id: json.id, demoUrl: json.demoUrl, demoLogin: json.demoLogin ?? null });
         setStatus("saved");
         if (new URLSearchParams(window.location.search).get("resume") === "notfound") {
           setNotice(json.created
@@ -176,7 +176,7 @@ export function ConceptTest() {
     }
   };
 
-  const props: StepProps = { s, set, save: saveOnBlur, errors, demoUrl: session.demoUrl };
+  const props: StepProps = { s, set, save: saveOnBlur, errors, demoUrl: session.demoUrl, demoLogin: session.demoLogin };
   const body = [
     <StepCurrent key={0} {...props} />,
     <StepWords key={1} which="wordsBefore" {...props} />,
