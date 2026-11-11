@@ -69,7 +69,7 @@ spec:
             - name: DATABASE_PATH
               value: /data/concept-test.db
             - name: DEMO_URL
-              value: https://ui-preview.portainercloud.io/addons/portainer-ops/home
+              value: https://ui-preview.portainercloud.io/addons/portainer-ops/auth
             # Optional sign-in shown on the demo step. Kept in a Secret, never in git; the card is hidden until it exists.
             - name: DEMO_USER
               valueFrom:
