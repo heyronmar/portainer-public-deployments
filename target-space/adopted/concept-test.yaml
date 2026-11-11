@@ -51,7 +51,7 @@ spec:
         - name: concept-test
           # Pinned to a build so every update is a manifest change that rolls out a new pod.
           # Tags are sha-<commit in portainer-public-deployments>; see README "Updating".
-          image: ghcr.io/heyronmar/concept-testing-app:sha-08821e7d655e47550956a9a4fef2a3fbaeaf1cae
+          image: ghcr.io/heyronmar/concept-testing-app:sha-b6463ae0e10360b8aa7878fea0b2dc62bbdaf639
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
@@ -66,6 +66,19 @@ spec:
               value: /data/concept-test.db
             - name: DEMO_URL
               value: https://portainer-laptop.heyronmar.com
+            # Optional sign-in shown on the demo step. Kept in a Secret, never in git; the card is hidden until it exists.
+            - name: DEMO_USER
+              valueFrom:
+                secretKeyRef:
+                  name: concept-test-demo
+                  key: username
+                  optional: true
+            - name: DEMO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: concept-test-demo
+                  key: password
+                  optional: true
             - name: ADMIN_USER
               valueFrom:
                 secretKeyRef:
