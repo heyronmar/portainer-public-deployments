@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: namespace-idp-sample
+  labels:
+    io.portainer.idp.managed: 'true'
+    io.portainer.idp.deploy-target: '1'
+    pod-security.kubernetes.io/warn: baseline
+    pod-security.kubernetes.io/audit: baseline
