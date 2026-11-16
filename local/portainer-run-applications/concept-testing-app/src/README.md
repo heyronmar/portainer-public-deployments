@@ -11,8 +11,8 @@ Built with Next.js (App Router, standalone output), Tailwind + shadcn/ui, and SQ
 | `SITE_URL`       | _(the request's domain)_                 | Public URL for link previews, canonical URL, robots.txt and sitemap.xml. Leave unset to use whichever domain the visitor came in on. |
 | `DEMO_URL`       | `https://portainer-laptop.heyronmar.com` | Where the "Open demo" button sends participants                |
 | `DATABASE_PATH`  | `/data/concept-test.db`                  | SQLite file. In the container it sits on the `/data` volume.   |
-| `ADMIN_USER`     | _(none)_                                 | Basic-auth user for `/admin`. `/admin` is disabled until this is set. |
-| `ADMIN_PASSWORD` | _(none)_                                 | Basic-auth password for `/admin`. `/admin` is disabled until this is set. |
+| `ADMIN_USER`     | _(none)_                                 | Sign-in username for `/admin`. `/admin` is disabled until this is set.       |
+| `ADMIN_PASSWORD` | _(none)_                                 | Sign-in password for `/admin`. Changing it signs everyone out. `/admin` is disabled until this is set. |
 | `PORT`           | `3000`                                   | Port the app listens on                                        |
 
 See `.env.example`.
@@ -64,7 +64,7 @@ Notes:
 - **One replica only.** SQLite is a single file on a ReadWriteOnce volume, so the Deployment uses the `Recreate` strategy.
 - **Data lives on the PVC.** Redeploys and image updates keep it. Deleting the PVC deletes all responses, so export the CSV first.
 - **Updating.** The manifest pins the image to a build tag (`sha-<commit>`, where the commit is the push to portainer-public-deployments that built it). After the workflow publishes a new image, change the tag in `k8s/concept-test.yaml` and commit; the changed manifest rolls out a new pod. Restarting the app without changing the tag keeps the running version.
-- **HTTPS.** Serve it over TLS at the ingress before sharing the link. The participant cookie is marked `Secure` when the ingress sends `X-Forwarded-Proto: https`, and basic auth should only travel over TLS.
+- **HTTPS.** Serve it over TLS at the ingress before sharing the link. The participant cookie is marked `Secure` when the ingress sends `X-Forwarded-Proto: https`, and the researcher sign-in should only travel over TLS.
 - **Changing the host or namespace.** Edit `metadata.namespace` on all four resources and `spec.rules[0].host` on the Ingress.
 
 To back up the database:
@@ -79,7 +79,7 @@ kubectl -n namespaces cp "$(kubectl -n namespaces get pod -l app=concept-test -o
 - **Saving.** Answers save on Continue/Back, when a text field loses focus, when a choice is clicked, and when the tab is hidden. The sidebar shows "Progress saved".
 - **Validation.** Each step is checked in the browser with inline messages. On final submit, the server checks every step again before it sets `submitted_at`.
 - **Data.** One table: `responses(id TEXT PK, data JSON, step INT, submitted_at TEXT, created_at TEXT, updated_at TEXT)`. `data` holds the full session object (same shape as `blank()` in `src/lib/survey.ts`). The server cleans incoming answers against the known option lists and length limits.
-- **Personal data.** Swag details (name, email, address) appear only in `/admin` and `/admin/export.csv`, both behind basic auth.
+- **Personal data.** Swag details (name, email, address) appear only in `/admin` and `/admin/export.csv`, both behind the researcher sign-in (`/admin/login`).
 
 ## Project layout
 
@@ -92,7 +92,7 @@ src/app/api/session/route.ts       start/resume (POST) and save/submit (PUT)
 src/app/r/[id]/route.ts            resume link
 src/app/admin/                     researcher dashboard, participant detail, export.csv
 src/app/api/health/route.ts        healthcheck
-src/proxy.ts                       basic auth for /admin
+src/proxy.ts                       sends signed-out visitors from /admin to /admin/login
 k8s/concept-test.yaml              Kubernetes manifest (PVC, Deployment, Service, Ingress)
 prototype/prototype.html           original single-file prototype (reference for flow and copy)
 ```

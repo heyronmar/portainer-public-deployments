@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Download } from "lucide-react";
+import { Download, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { signOut } from "../actions";
 
 export const metadata: Metadata = { title: "Responses · Portainer V3 Concept Test", robots: { index: false } };
 
@@ -17,10 +18,15 @@ export default function AdminLayout({ children }: LayoutProps<"/admin">) {
               <span className="text-xs text-muted-foreground">Researcher view</span>
             </div>
           </Link>
-          <Button asChild variant="outline" size="lg" className="h-9 px-3">
-            {/* Plain <a>: a file download, not a client-side navigation. */}
-            <a href="/admin/export.csv" download><Download /> Export CSV</a>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="lg" className="h-9 px-3">
+              {/* Plain <a>: a file download, not a client-side navigation. */}
+              <a href="/admin/export.csv" download><Download /> Export CSV</a>
+            </Button>
+            <form action={signOut}>
+              <Button type="submit" variant="ghost" size="lg" className="h-9 px-3 text-muted-foreground"><LogOut /> Sign out</Button>
+            </form>
+          </div>
         </div>
       </header>
       <main className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8">{children}</main>
