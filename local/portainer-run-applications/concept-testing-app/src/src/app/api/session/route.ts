@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createResponse, getResponse, saveResponse } from "@/lib/db";
+import { serverEmailProblem } from "@/lib/email-check";
 import { COOKIE, setIdCookie } from "@/lib/session";
 import { DONE_STEP, STEP_COUNT, sanitize, validateStep } from "@/lib/survey";
 
@@ -32,6 +33,14 @@ export async function PUT(req: NextRequest) {
   // Server-owned fields: never taken from the client.
   next.startedAt = row.state.startedAt;
   next.submittedAt = row.state.submittedAt;
+
+  // Check the email when they leave the intro and again on submit, so dummy addresses can't skip the form's check.
+  if ((next.introDone && !row.state.introDone) || body.submit) {
+    const problem = await serverEmailProblem(next.a.swag.email);
+    if (problem) {
+      return NextResponse.json({ error: problem, step: next.introDone && !row.state.introDone ? -1 : STEP_COUNT - 1, errors: { "swag.email": problem } }, { status: 422 });
+    }
+  }
 
   if (body.submit) {
     for (let i = 0; i < STEP_COUNT; i++) {

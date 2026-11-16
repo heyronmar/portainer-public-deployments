@@ -109,11 +109,44 @@ export type Errors = Record<string, string>;
 const REQUIRED = "This question is required.";
 const EMAIL = /^\S+@\S+\.\S+$/;
 
+// Throwaway inboxes and placeholder domains. Swag is shipped to this address, so it has to be a real one.
+const DUMMY_DOMAINS = new Set(`
+  example.com example.org example.net example.edu test.com test.org test.net testing.com tester.com
+  domain.com yourdomain.com mydomain.com company.com yourcompany.com website.com email.test sample.com
+  fake.com fakeemail.com fakemail.com fakemail.net dummy.com dummymail.com nomail.com noemail.com none.com
+  null.com abc.com xyz.com asdf.com qwerty.com foo.com bar.com foobar.com blah.com aaa.com placeholder.com
+  mailinator.com mailinator.net mailinator2.com guerrillamail.com guerrillamail.net guerrillamail.org
+  guerrillamailblock.com sharklasers.com grr.la pokemail.net spam4.me 10minutemail.com 10minutemail.net
+  20minutemail.com temp-mail.org temp-mail.io tempmail.com tempmail.net tempmail.dev tempmailo.com
+  tempinbox.com tempr.email tmpmail.org tmpmail.net mytemp.email throwawaymail.com yopmail.com yopmail.net
+  yopmail.fr trashmail.com trashmail.net trashmail.de getnada.com nada.email dispostable.com maildrop.cc maildrop.com
+  mailnesia.com mailcatch.com fakeinbox.com mintemail.com mohmal.com emailondeck.com discard.email
+  moakt.com burnermail.io spamgourmet.com inboxkitten.com emailfake.com getairmail.com mailpoof.com
+  33mail.com anonaddy.me mailsac.com harakirimail.com spambox.us trash-mail.com wegwerfmail.de
+`.split(/\s+/).filter(Boolean));
+// Reserved for testing and never deliverable on the public internet.
+const DUMMY_TLDS = ["test", "example", "invalid", "localhost", "local", "lan", "internal"];
+// Local parts that are obviously made up.
+const DUMMY_LOCAL = /^(?:test(?:ing|er)?\d*|fake\d*|dummy\d*|sample\d*|example\d*|demo\d*|asdf\w*|qwert\w*|abc\d*|xyz\d*|foo(?:bar)?\d*|bar\d*|null|none|nobody|no-?reply|do-?not-?reply|spam\d*|junk\d*|temp\d*|user\d*|email\d*|mail\d*|name|your-?name|someone|anonymous|\d+|(.)\1{2,})$/;
+
+/** Why an email can't be used, or null if it's fine. Shared by the browser and the server. */
+export function emailProblem(raw: string): string | null {
+  const email = raw.trim().toLowerCase();
+  if (!email) return "Enter your email address.";
+  if (!EMAIL.test(email)) return "That email address doesn't look right. Check for typos.";
+  const [local, domain] = [email.slice(0, email.lastIndexOf("@")), email.slice(email.lastIndexOf("@") + 1)];
+  const tld = domain.slice(domain.lastIndexOf(".") + 1);
+  if (DUMMY_DOMAINS.has(domain) || [...DUMMY_DOMAINS].some((d) => domain.endsWith(`.${d}`)) || DUMMY_TLDS.includes(tld))
+    return "That looks like a test or throwaway email domain. Please use your real email so we can send your swag.";
+  if (DUMMY_LOCAL.test(local.replace(/[._+]/g, "")))
+    return "That looks like a placeholder address. Please use your real email so we can send your swag.";
+  return null;
+}
+
 /** The intro asks for an email first. It is stored as the swag email, so step 6 starts prefilled. */
 export function validateIntro(s: State): Errors {
-  const email = s.a.swag.email.trim();
-  if (!email) return { "swag.email": "Enter your email address." };
-  return EMAIL.test(email) ? {} : { "swag.email": "That email address doesn't look right. Check for typos." };
+  const problem = emailProblem(s.a.swag.email);
+  return problem ? { "swag.email": problem } : {};
 }
 
 function validCurrent(s: State): Errors {
@@ -149,7 +182,10 @@ export const SWAG_REQUIRED = ["name", "email", "address", "city", "postcode", "c
 function validSwag(s: State): Errors {
   const sw = s.a.swag, e: Errors = {};
   for (const k of SWAG_REQUIRED) if (!sw[k].trim()) e[`swag.${k}`] = "This field is required.";
-  if (!e["swag.email"] && !EMAIL.test(sw.email.trim())) e["swag.email"] = "That email address doesn't look right. Check for typos.";
+  if (!e["swag.email"]) {
+    const problem = emailProblem(sw.email);
+    if (problem) e["swag.email"] = problem;
+  }
   if (!sw.size) e["swag.size"] = "Pick a t-shirt size.";
   if (!sw.consent) e["swag.consent"] = "Please tick the consent box so we can ship your swag.";
   return e;

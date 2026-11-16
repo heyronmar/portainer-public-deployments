@@ -16,11 +16,53 @@ export function summary(rows: ResponseRow[]) {
   };
 }
 
-/** Most-picked words, highest first. */
-export function topWords(rows: ResponseRow[], which: WordKey, kind: "pos" | "neg", limit = 8): [string, number][] {
+export type WordComment = { id: string; role: string; text: string };
+export type SentimentWord = {
+  word: string;
+  kind: "pos" | "neg";
+  count: number;
+  comments: WordComment[];
+  /** Common words across the comments, as a rough theme summary. */
+  themes: string[];
+  /** How the same word did on the other UI, for comparison in the pop-up. */
+  other: { count: number; people: number };
+};
+export type Sentiment = { people: number; pos: number; neg: number; words: SentimentWord[] };
+
+const STOP = new Set("a an and are as at be because but by can do does for from get got had has have how i if in into is it its it's just like lot lots more most much my no not of on one or so some than that the their them then there these they this to too very was way we were what when where which while who why will with would you your really things thing feel feels felt looks look ui portainer current v3 also many every all once each other others any less fewer find found make makes made know new old still even ever over under again after before about only same well".split(" "));
+
+/** The most repeated meaningful words across comments (each counted once per comment, seen in at least two). */
+function themes(texts: string[], skip: string, limit = 4): string[] {
   const m = new Map<string, number>();
-  for (const r of rows) for (const w of r.state.a[which][kind]) m.set(w, (m.get(w) ?? 0) + 1);
-  return [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, limit);
+  for (const t of texts)
+    for (const w of new Set(t.toLowerCase().match(/[a-z][a-z'-]{2,}/g) ?? []))
+      if (!STOP.has(w) && w !== skip.toLowerCase()) m.set(w, (m.get(w) ?? 0) + 1);
+  return [...m.entries()].filter(([, n]) => n >= 2).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, limit).map(([w]) => w);
+}
+
+/** Positive vs negative picks for one UI, with every word's comments. */
+export function sentiment(rows: ResponseRow[], which: WordKey): Sentiment {
+  const other: WordKey = which === "wordsBefore" ? "wordsAfter" : "wordsBefore";
+  const answered = (k: WordKey) => rows.filter((r) => r.state.a[k].pos.length + r.state.a[k].neg.length > 0);
+  const mine = answered(which), theirs = answered(other);
+  const words = new Map<string, SentimentWord>();
+  let pos = 0, neg = 0;
+  for (const r of mine)
+    for (const kind of ["pos", "neg"] as const)
+      for (const word of r.state.a[which][kind]) {
+        if (kind === "pos") pos++;
+        else neg++;
+        const e = words.get(word) ?? { word, kind, count: 0, comments: [], themes: [], other: { count: 0, people: theirs.length } };
+        e.count++;
+        const text = (r.state.a[which].why[word] ?? "").trim();
+        if (text) e.comments.push({ id: r.id, role: r.state.a.role, text });
+        words.set(word, e);
+      }
+  for (const e of words.values()) {
+    e.other.count = theirs.filter((r) => r.state.a[other][e.kind].includes(e.word)).length;
+    e.themes = themes(e.comments.map((c) => c.text), e.word);
+  }
+  return { people: mine.length, pos, neg, words: [...words.values()].sort((a, b) => b.count - a.count || a.word.localeCompare(b.word)) };
 }
 
 export const progressLabel = (r: ResponseRow) => (r.submittedAt ? "Complete" : `${r.state.completed.length}/${STEP_COUNT}`);

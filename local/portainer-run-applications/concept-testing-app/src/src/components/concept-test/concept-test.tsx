@@ -24,6 +24,8 @@ export function ConceptTest() {
   const [showErrors, setShowErrors] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [emailError, setEmailError] = useState("");
   /** The step just completed with Continue, for the "nice work" banner on the next one. */
   const [cheered, setCheered] = useState<number | null>(null);
   // The latest state, readable synchronously by save() right after a mutation.
@@ -119,14 +121,28 @@ export function ConceptTest() {
   }
 
   if (!s.introDone) {
-    const startTest = () => {
+    // The server also checks the email (including that its domain can receive mail), so wait for it before moving on.
+    const startTest = async () => {
       if (Object.keys(validateIntro(s)).length) { setShowErrors(true); return; }
       setShowErrors(false);
-      set((d) => { d.a.swag.email = d.a.swag.email.trim(); d.introDone = true; }, true);
-      window.scrollTo(0, 0);
+      setEmailError("");
+      const before = ref.current!;
+      ref.current = { ...before, introDone: true, a: { ...before.a, swag: { ...before.a.swag, email: before.a.swag.email.trim() } } };
+      setChecking(true);
+      try {
+        await save();
+        setS(ref.current);
+        window.scrollTo(0, 0);
+      } catch (err) {
+        ref.current = before;
+        const body = (err as { body?: { errors?: Errors } }).body;
+        setEmailError(body?.errors?.["swag.email"] ?? "We couldn't check your email. Check your connection and try again.");
+      } finally {
+        setChecking(false);
+      }
     };
-    return <Intro email={s.a.swag.email} error={showErrors ? validateIntro(s)["swag.email"] : undefined} notice={notice}
-      onChange={(v) => set((d) => { d.a.swag.email = v; })} onBlur={saveOnBlur} onContinue={startTest} />;
+    return <Intro email={s.a.swag.email} error={(showErrors ? validateIntro(s)["swag.email"] : undefined) ?? (emailError || undefined)} notice={notice}
+      checking={checking} onChange={(v) => { setEmailError(""); set((d) => { d.a.swag.email = v; }); }} onBlur={saveOnBlur} onContinue={startTest} />;
   }
 
   const step = s.step;
@@ -233,8 +249,8 @@ const INTRO_STEPS = [
   { icon: Gift, text: "Claim your free swag" },
 ];
 
-function Intro({ email, error, notice, onChange, onBlur, onContinue }: {
-  email: string; error?: string; notice: string; onChange: (v: string) => void; onBlur: () => void; onContinue: () => void;
+function Intro({ email, error, notice, checking, onChange, onBlur, onContinue }: {
+  email: string; error?: string; notice: string; checking: boolean; onChange: (v: string) => void; onBlur: () => void; onContinue: () => void;
 }) {
   return (
     <main className="grid min-h-dvh place-items-center bg-linear-to-b from-brand-soft/60 to-background px-4 py-10">
@@ -265,8 +281,8 @@ function Intro({ email, error, notice, onChange, onBlur, onContinue }: {
             onChange={(e) => onChange(e.target.value)} onBlur={onBlur} />
           <FieldError name="swag.email" error={error} />
         </div>
-        <Button type="submit" size="lg" className="h-12 w-full rounded-full bg-brand text-[16px] text-brand-foreground shadow-lg shadow-brand/25 hover:bg-brand/90">
-          Let&apos;s start →
+        <Button type="submit" size="lg" disabled={checking} className="h-12 w-full rounded-full bg-brand text-[16px] text-brand-foreground shadow-lg shadow-brand/25 hover:bg-brand/90">
+          {checking ? <><Loader2 className="size-4 animate-spin" />Checking…</> : <>Let&apos;s start →</>}
         </Button>
         <p className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[13px] text-muted-foreground">
           <span className="inline-flex items-center gap-1.5"><Clock className="size-3.5" />15–30 minutes</span>

@@ -5,10 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { listResponses, type ResponseRow } from "@/lib/db";
-import { progressLabel, summary, topWords } from "@/lib/report";
-import type { WordKey } from "@/lib/survey";
+import { progressLabel, sentiment, summary } from "@/lib/report";
 import { dash, fmtDate } from "./format";
 import { ParticipantRow } from "./participant-row";
+import { SentimentCards } from "./sentiment";
 
 export default function AdminPage() {
   return (
@@ -36,10 +36,7 @@ async function Dashboard() {
         <Stat value={s.avgSatisfaction} label={`Avg satisfaction today (1–5, n=${s.satisfactionN})`} />
         <Stat value={`${s.preferV3} / ${s.preferCurrent}`} label={`Prefer V3 / current (${s.noPreference} no preference)`} />
       </div>
-      <div className="grid gap-3 md:grid-cols-2">
-        <WordsCard rows={rows} which="wordsBefore" title="Current UI" />
-        <WordsCard rows={rows} which="wordsAfter" title="V3 UI" />
-      </div>
+      <SentimentCards current={sentiment(rows, "wordsBefore")} v3={sentiment(rows, "wordsAfter")} />
       <Card className="gap-0 rounded-lg py-0">
         <Table>
           <TableHeader className="bg-muted">
@@ -86,31 +83,5 @@ function Stat({ value, label }: { value: string | number; label: string }) {
       <b className="text-[22px] font-semibold tabular-nums">{value}</b>
       <span className="text-xs text-muted-foreground">{label}</span>
     </Card>
-  );
-}
-
-function WordsCard({ rows, which, title }: { rows: ResponseRow[]; which: WordKey; title: string }) {
-  return (
-    <Card className="gap-4 rounded-lg p-5">
-      <span className="text-sm font-medium">{title}</span>
-      <Bars list={topWords(rows, which, "pos")} kind="pos" label="Most-picked positive" />
-      <Bars list={topWords(rows, which, "neg")} kind="neg" label="Most-picked negative" />
-    </Card>
-  );
-}
-
-function Bars({ list, kind, label }: { list: [string, number][]; kind: "pos" | "neg"; label: string }) {
-  const max = Math.max(1, ...list.map(([, n]) => n));
-  return (
-    <div className="flex flex-col gap-1.5">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      {list.length === 0 ? <span className="text-[13px] text-muted-foreground">No picks yet</span> : list.map(([w, n]) => (
-        <div key={w} className="grid grid-cols-[120px_minmax(0,1fr)_28px] items-center gap-2 text-[12.5px]">
-          <span className="truncate">{w}</span>
-          <span className="h-2 rounded" style={{ width: `${(n / max) * 100}%`, background: `var(--${kind})` }} />
-          <span className="text-right font-mono text-muted-foreground">{n}</span>
-        </div>
-      ))}
-    </div>
   );
 }
