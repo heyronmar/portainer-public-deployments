@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, type ReactNode } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Dialog } from "radix-ui";
 import { Loader2, Trash2 } from "lucide-react";
@@ -58,7 +59,7 @@ export function DeleteParticipant({ id, name }: { id: string; name: string }) {
           </div>
           {error && (
             <p role="alert" className="text-[13px] text-neg">
-              {error}{error === EXPIRED && <> <a href="/admin/login" className="font-medium underline underline-offset-4">Sign in</a></>}
+              {error}{error === EXPIRED && <> <Link href="/admin/login" className="font-medium underline underline-offset-4">Sign in</Link></>}
             </p>
           )}
           <div className="flex justify-end gap-2">
