@@ -79,6 +79,7 @@ const COLUMNS: [string, (r: ResponseRow) => unknown][] = [
   ["role", (r) => r.state.a.role],
   ["usage", (r) => r.state.a.usage],
   ["frequency", (r) => r.state.a.frequency],
+  ["other_tools", (r) => r.state.a.tools.join("; ")],
   ["satisfaction", (r) => r.state.a.satisfaction],
   ["ease", (r) => r.state.a.ease],
   ["likes", (r) => r.state.a.likes],

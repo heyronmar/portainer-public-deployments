@@ -12,12 +12,12 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  FOLLOW_UP, FREQUENCY, NEG, PICK_MAX, PICK_MIN, POS, PREFERENCES, ROLES, SIZES, STEPS, STEP_COUNT, TASKS, USAGE,
+  FOLLOW_UP, FREQUENCY, NEG, PICK_MAX, PICK_MIN, POS, PREFERENCES, ROLES, SIZES, STEPS, STEP_COUNT, TASKS, TOOL_LEN, TOOLS_MAX, USAGE,
   type Answers, type Errors, type State, type Swag, type WordKey,
 } from "@/lib/survey";
 import { cn } from "@/lib/utils";
 import { Confetti, Dots, StepArt } from "./art";
-import { Chips, FaceScale, Field, FieldError, Panel, Scale, WordCard, WordTag, type Tone } from "./fields";
+import { Chips, FaceScale, Field, FieldError, Panel, Scale, TagInput, WordCard, WordTag, type Tone } from "./fields";
 
 export type StepProps = {
   s: State;
@@ -113,6 +113,10 @@ export function StepCurrent(p: StepProps) {
             <OptionSelect id="usage" value={a.usage} options={USAGE} invalid={!!e.usage} onChange={(v) => set((d) => { d.a.usage = v; }, true)} />
           </Field>
         </div>
+        <Field name="tools" htmlFor="tools" label="What other tools do you use alongside Portainer?" hint="Separate them with commas or press Enter.">
+          <TagInput id="tools" value={a.tools} max={TOOLS_MAX} maxLength={TOOL_LEN} placeholder="e.g. Rancher, Lens, kubectl, Docker Desktop"
+            onChange={(v) => set((d) => { d.a.tools = v; }, true)} />
+        </Field>
         <Field name="frequency" label="How often do you use it?">
           <Chips name="frequency" options={FREQUENCY} icons={FREQUENCY_ICONS} value={a.frequency} onChange={(v) => set((d) => { d.a.frequency = v; }, true)} />
         </Field>

@@ -1,7 +1,7 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { Check, Plus } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import { Check, Plus, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Face } from "./art";
@@ -147,6 +147,48 @@ export function WordTag({ word, kind }: { word: string; kind: "pos" | "neg" }) {
     <span className={cn("inline-flex items-center justify-self-start rounded-full px-2.5 py-1 text-[12.5px] font-medium", kind === "pos" ? "bg-pos-soft text-pos" : "bg-neg-soft text-neg")}>
       {word}
     </span>
+  );
+}
+
+/** Free-text tags: typing a comma or pressing Enter turns the text into a tag. Backspace in an empty box removes the last one. */
+export function TagInput({ id, value, onChange, placeholder, max, maxLength }: {
+  id: string; value: string[]; onChange: (v: string[]) => void; placeholder?: string; max: number; maxLength: number;
+}) {
+  const [text, setText] = useState("");
+  const add = (raw: string) => {
+    const next = [...value];
+    for (const part of raw.split(",")) {
+      const t = part.trim().slice(0, maxLength);
+      if (t && next.length < max && !next.some((x) => x.toLowerCase() === t.toLowerCase())) next.push(t);
+    }
+    if (next.length !== value.length) onChange(next);
+  };
+  const full = value.length >= max;
+  return (
+    <div onClick={(e) => (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.focus()}
+      className="flex min-h-11 cursor-text flex-wrap items-center gap-1.5 rounded-xl border border-input px-2 py-1.5 transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 dark:bg-input/30">
+      {value.map((t) => (
+        <span key={t} className="inline-flex items-center gap-1 rounded-full bg-brand-soft py-1 pr-1 pl-3 text-[13.5px] font-medium text-brand motion-safe:animate-pop">
+          {t}
+          <button type="button" aria-label={`Remove ${t}`} onClick={() => onChange(value.filter((x) => x !== t))}
+            className="grid size-5 place-items-center rounded-full outline-none hover:bg-brand/15 focus-visible:ring-2 focus-visible:ring-ring/50">
+            <X className="size-3.5" />
+          </button>
+        </span>
+      ))}
+      <input id={id} value={text} disabled={full} placeholder={full ? `That's the limit of ${max}` : value.length ? "Add another…" : placeholder}
+        className="h-8 min-w-36 flex-1 bg-transparent px-1.5 text-[15px] outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
+        onChange={(e) => {
+          const v = e.target.value;
+          if (v.includes(",")) { const i = v.lastIndexOf(","); add(v.slice(0, i)); setText(v.slice(i + 1).trimStart()); }
+          else setText(v);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); add(text); setText(""); }
+          else if (e.key === "Backspace" && !text && value.length) onChange(value.slice(0, -1));
+        }}
+        onBlur={() => { add(text); setText(""); }} />
+    </div>
   );
 }
 

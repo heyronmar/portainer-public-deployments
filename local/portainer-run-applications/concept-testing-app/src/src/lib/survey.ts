@@ -13,6 +13,8 @@ export const TASKS = ["Look around the home dashboard", "Find and open an enviro
 export const PREFERENCES = ["Current Portainer", "Portainer V3", "No preference"];
 export const FOLLOW_UP = ["Yes, happy to chat", "No thanks"];
 export const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL"];
+export const TOOLS_MAX = 20;
+export const TOOL_LEN = 40;
 
 export const STEPS = [
   { key: "current", title: "Current Portainer", sub: "How it feels today", mins: 3 },
@@ -30,6 +32,8 @@ export type WordPicks = { pos: string[]; neg: string[]; why: Record<string, stri
 export type Swag = { name: string; email: string; company: string; address: string; city: string; postcode: string; country: string; size: string; consent: boolean };
 export type Answers = {
   role: string; usage: string; frequency: string;
+  /** Other tools they use alongside Portainer, free-text tags. */
+  tools: string[];
   satisfaction: number | null; ease: number | null; likes: string; frustrations: string;
   wordsBefore: WordPicks;
   demoTasks: string[]; demoNotes: string;
@@ -48,7 +52,7 @@ export type State = {
 export const blank = (): State => ({
   step: 0, completed: [], openedDemo: false, introDone: false, startedAt: new Date().toISOString(), submittedAt: null,
   a: {
-    role: "", usage: "", frequency: "", satisfaction: null, ease: null, likes: "", frustrations: "",
+    role: "", usage: "", frequency: "", tools: [], satisfaction: null, ease: null, likes: "", frustrations: "",
     wordsBefore: { pos: [], neg: [], why: {} },
     demoTasks: [], demoNotes: "",
     wordsAfter: { pos: [], neg: [], why: {} },
@@ -66,6 +70,17 @@ const oneOf = (v: unknown, opts: readonly string[]) => (typeof v === "string" &&
 const intIn = (v: unknown, lo: number, hi: number) => (typeof v === "number" && Number.isInteger(v) && v >= lo && v <= hi ? v : null);
 const pick = (v: unknown, opts: readonly string[], max = Infinity) =>
   Array.isArray(v) ? [...new Set(v.filter((x): x is string => typeof x === "string" && opts.includes(x)))].slice(0, max) : [];
+
+/** Free-text tags: trimmed, capped, de-duplicated ignoring case. */
+export function tags(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  const seen = new Set<string>(), out: string[] = [];
+  for (const x of v) {
+    const t = typeof x === "string" ? x.trim().slice(0, TOOL_LEN) : "";
+    if (t && !seen.has(t.toLowerCase())) { seen.add(t.toLowerCase()); out.push(t); }
+  }
+  return out.slice(0, TOOLS_MAX);
+}
 
 function words(v: unknown): WordPicks {
   const w = obj(v), whyIn = obj(w.why);
@@ -87,7 +102,7 @@ export function sanitize(input: unknown): State {
     submittedAt: str(s.submittedAt, 40) || null,
     updatedAt: str(s.updatedAt, 40) || undefined,
     a: {
-      role: oneOf(a.role, ROLES), usage: oneOf(a.usage, USAGE), frequency: oneOf(a.frequency, FREQUENCY),
+      role: oneOf(a.role, ROLES), usage: oneOf(a.usage, USAGE), frequency: oneOf(a.frequency, FREQUENCY), tools: tags(a.tools),
       satisfaction: intIn(a.satisfaction, 1, 5), ease: intIn(a.ease, 1, 7), likes: str(a.likes), frustrations: str(a.frustrations),
       wordsBefore: words(a.wordsBefore),
       demoTasks: pick(a.demoTasks, TASKS), demoNotes: str(a.demoNotes),
