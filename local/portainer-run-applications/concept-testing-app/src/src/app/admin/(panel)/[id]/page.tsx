@@ -40,7 +40,7 @@ async function Participant({ params }: { params: PageProps<"/admin/[id]">["param
 
       <Section title="1. Current Portainer">
         <Pairs items={[
-          ["Role", a.role], ["Using Portainer for", a.usage], ["Edition", a.edition], ["Frequency", a.frequency],
+          ["Role", a.role], ["Using Portainer for", a.usage], ["Frequency", a.frequency],
           ["Satisfaction (1–5)", a.satisfaction], ["Ease (1–7)", a.ease],
         ]} />
         <Long label="What they like" text={a.likes} />

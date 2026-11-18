@@ -78,7 +78,6 @@ const COLUMNS: [string, (r: ResponseRow) => unknown][] = [
   ["steps_completed", (r) => r.state.completed.length],
   ["role", (r) => r.state.a.role],
   ["usage", (r) => r.state.a.usage],
-  ["edition", (r) => r.state.a.edition],
   ["frequency", (r) => r.state.a.frequency],
   ["satisfaction", (r) => r.state.a.satisfaction],
   ["ease", (r) => r.state.a.ease],

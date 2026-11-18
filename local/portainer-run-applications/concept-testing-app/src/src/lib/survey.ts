@@ -8,7 +8,6 @@ export const PICK_MAX = 3;
 
 export const ROLES = ["Platform / DevOps engineer", "Developer", "SRE / Ops", "IT administrator", "Engineering manager", "Homelab / hobbyist", "Other"];
 export const USAGE = ["Less than 6 months", "6–12 months", "1–3 years", "3+ years"];
-export const EDITIONS = ["Community Edition", "Business Edition", "Both", "Not sure"];
 export const FREQUENCY = ["Daily", "Weekly", "Monthly", "Rarely"];
 export const TASKS = ["Look around the home dashboard", "Find and open an environment", "Find a running container or workload", "Try deploying or editing something", "Look for settings or user management"];
 export const PREFERENCES = ["Current Portainer", "Portainer V3", "No preference"];
@@ -30,7 +29,7 @@ export type WordKey = "wordsBefore" | "wordsAfter";
 export type WordPicks = { pos: string[]; neg: string[]; why: Record<string, string> };
 export type Swag = { name: string; email: string; company: string; address: string; city: string; postcode: string; country: string; size: string; consent: boolean };
 export type Answers = {
-  role: string; usage: string; edition: string; frequency: string;
+  role: string; usage: string; frequency: string;
   satisfaction: number | null; ease: number | null; likes: string; frustrations: string;
   wordsBefore: WordPicks;
   demoTasks: string[]; demoNotes: string;
@@ -49,7 +48,7 @@ export type State = {
 export const blank = (): State => ({
   step: 0, completed: [], openedDemo: false, introDone: false, startedAt: new Date().toISOString(), submittedAt: null,
   a: {
-    role: "", usage: "", edition: "", frequency: "", satisfaction: null, ease: null, likes: "", frustrations: "",
+    role: "", usage: "", frequency: "", satisfaction: null, ease: null, likes: "", frustrations: "",
     wordsBefore: { pos: [], neg: [], why: {} },
     demoTasks: [], demoNotes: "",
     wordsAfter: { pos: [], neg: [], why: {} },
@@ -88,7 +87,7 @@ export function sanitize(input: unknown): State {
     submittedAt: str(s.submittedAt, 40) || null,
     updatedAt: str(s.updatedAt, 40) || undefined,
     a: {
-      role: oneOf(a.role, ROLES), usage: oneOf(a.usage, USAGE), edition: oneOf(a.edition, EDITIONS), frequency: oneOf(a.frequency, FREQUENCY),
+      role: oneOf(a.role, ROLES), usage: oneOf(a.usage, USAGE), frequency: oneOf(a.frequency, FREQUENCY),
       satisfaction: intIn(a.satisfaction, 1, 5), ease: intIn(a.ease, 1, 7), likes: str(a.likes), frustrations: str(a.frustrations),
       wordsBefore: words(a.wordsBefore),
       demoTasks: pick(a.demoTasks, TASKS), demoNotes: str(a.demoNotes),

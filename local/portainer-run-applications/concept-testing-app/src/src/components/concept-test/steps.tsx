@@ -2,8 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 import {
-  Briefcase, CalendarDays, Check, CalendarRange, CircleHelp, Clock, Copy, ExternalLink, KeyRound, Hand, History, Layers, MessageCircleHeart,
-  Scale as ScaleIcon, Shirt, Snail, Sparkles, Sun, ThumbsDown, ThumbsUp, Users,
+  CalendarDays, Check, CalendarRange, Clock, Copy, ExternalLink, KeyRound, Hand, History, MessageCircleHeart,
+  Scale as ScaleIcon, Shirt, Snail, Sparkles, Sun, ThumbsDown, ThumbsUp,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  EDITIONS, FOLLOW_UP, FREQUENCY, NEG, PICK_MAX, PICK_MIN, POS, PREFERENCES, ROLES, SIZES, STEPS, STEP_COUNT, TASKS, USAGE,
+  FOLLOW_UP, FREQUENCY, NEG, PICK_MAX, PICK_MIN, POS, PREFERENCES, ROLES, SIZES, STEPS, STEP_COUNT, TASKS, USAGE,
   type Answers, type Errors, type State, type Swag, type WordKey,
 } from "@/lib/survey";
 import { cn } from "@/lib/utils";
@@ -59,7 +59,6 @@ const Cheer = ({ children }: { children: ReactNode }) => (
 );
 
 const ic = "size-5";
-const EDITION_ICONS = { "Community Edition": <Users className={ic} />, "Business Edition": <Briefcase className={ic} />, Both: <Layers className={ic} />, "Not sure": <CircleHelp className={ic} /> };
 const FREQUENCY_ICONS = { Daily: <Sun className={ic} />, Weekly: <CalendarDays className={ic} />, Monthly: <CalendarRange className={ic} />, Rarely: <Snail className={ic} /> };
 const PREFERENCE_ICONS = { "Current Portainer": <History className={ic} />, "Portainer V3": <Sparkles className={ic} />, "No preference": <ScaleIcon className={ic} /> };
 const FOLLOW_UP_ICONS = { "Yes, happy to chat": <MessageCircleHeart className={ic} />, "No thanks": <Hand className={ic} /> };
@@ -114,9 +113,6 @@ export function StepCurrent(p: StepProps) {
             <OptionSelect id="usage" value={a.usage} options={USAGE} invalid={!!e.usage} onChange={(v) => set((d) => { d.a.usage = v; }, true)} />
           </Field>
         </div>
-        <Field name="edition" label="Which edition do you use?">
-          <Chips name="edition" options={EDITIONS} icons={EDITION_ICONS} value={a.edition} onChange={(v) => set((d) => { d.a.edition = v; }, true)} />
-        </Field>
         <Field name="frequency" label="How often do you use it?">
           <Chips name="frequency" options={FREQUENCY} icons={FREQUENCY_ICONS} value={a.frequency} onChange={(v) => set((d) => { d.a.frequency = v; }, true)} />
         </Field>
