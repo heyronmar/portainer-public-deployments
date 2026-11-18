@@ -113,12 +113,12 @@ export function StepCurrent(p: StepProps) {
             <OptionSelect id="usage" value={a.usage} options={USAGE} invalid={!!e.usage} onChange={(v) => set((d) => { d.a.usage = v; }, true)} />
           </Field>
         </div>
+        <Field name="frequency" label="How often do you use Portainer?">
+          <Chips name="frequency" options={FREQUENCY} icons={FREQUENCY_ICONS} value={a.frequency} onChange={(v) => set((d) => { d.a.frequency = v; }, true)} />
+        </Field>
         <Field name="tools" htmlFor="tools" label="What other tools do you use alongside Portainer?" hint="Separate them with commas or press Enter.">
           <TagInput id="tools" value={a.tools} max={TOOLS_MAX} maxLength={TOOL_LEN} placeholder="e.g. Rancher, Lens, kubectl, Docker Desktop"
             onChange={(v) => set((d) => { d.a.tools = v; }, true)} />
-        </Field>
-        <Field name="frequency" label="How often do you use it?">
-          <Chips name="frequency" options={FREQUENCY} icons={FREQUENCY_ICONS} value={a.frequency} onChange={(v) => set((d) => { d.a.frequency = v; }, true)} />
         </Field>
       </Panel>
       <Panel>
