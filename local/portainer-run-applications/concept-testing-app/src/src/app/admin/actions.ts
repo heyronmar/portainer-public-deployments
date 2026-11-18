@@ -1,7 +1,23 @@
 "use server";
+import { revalidatePath } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { ADMIN_COOKIE, ADMIN_MAX_AGE, adminEnabled, checkCredentials, createSessionToken, safeNext } from "@/lib/admin-auth";
+import {
+  ADMIN_COOKIE, ADMIN_MAX_AGE, adminEnabled, checkCredentials, createSessionToken, safeNext, verifyBasicAuth, verifySessionToken,
+} from "@/lib/admin-auth";
+import { deleteResponse } from "@/lib/db";
+
+/** Server actions can be posted to any URL, so the /admin proxy check isn't enough on its own. */
+async function isAdmin() {
+  return verifySessionToken((await cookies()).get(ADMIN_COOKIE)?.value) || verifyBasicAuth((await headers()).get("authorization"));
+}
+
+export async function deleteParticipant(id: string): Promise<{ error?: string }> {
+  if (!(await isAdmin())) return { error: "Your session has expired. Sign in again to delete records." }; // same text as EXPIRED in participant-row
+  if (!deleteResponse(id)) return { error: "That record was already deleted." };
+  revalidatePath("/admin");
+  return {};
+}
 
 export type SignInState = { error?: string; user?: string };
 

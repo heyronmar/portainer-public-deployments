@@ -59,6 +59,12 @@ export function saveResponse(id: string, state: State): ResponseRow {
   return getResponse(id)!;
 }
 
+/** For the researcher view, to remove test records. Returns false if there was no such row. */
+export function deleteResponse(id: string): boolean {
+  if (!isValidId(id)) return false;
+  return db().prepare("DELETE FROM responses WHERE id = ?").run(id).changes > 0;
+}
+
 export function listResponses(): ResponseRow[] {
   return (db().prepare("SELECT * FROM responses ORDER BY updated_at DESC").all() as RawRow[]).map(toRow);
 }

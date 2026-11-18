@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { listResponses, type ResponseRow } from "@/lib/db";
 import { progressLabel, sentiment, summary } from "@/lib/report";
 import { dash, fmtDate } from "./format";
-import { ParticipantRow } from "./participant-row";
+import { DeleteParticipant, ParticipantRow } from "./participant-row";
 import { SentimentCards } from "./sentiment";
 
 export default function AdminPage() {
@@ -44,11 +44,12 @@ async function Dashboard() {
               {["Participant", "Role", "Progress", "Sat.", "Ease", "Prefers", "Recommend", "Swag size", "Updated"].map((h) => (
                 <TableHead key={h} className="text-xs text-muted-foreground">{h}</TableHead>
               ))}
+              <TableHead className="w-12"><span className="sr-only">Delete</span></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.length === 0 ? (
-              <TableRow><TableCell colSpan={9} className="py-8 text-center text-muted-foreground">No responses yet. Share the test link with participants to start collecting.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={10} className="py-8 text-center text-muted-foreground">No responses yet. Share the test link with participants to start collecting.</TableCell></TableRow>
             ) : rows.map((r) => <Row key={r.id} r={r} />)}
           </TableBody>
         </Table>
@@ -58,11 +59,11 @@ async function Dashboard() {
 }
 
 function Row({ r }: { r: ResponseRow }) {
-  const a = r.state.a, href = `/admin/${r.id}`;
+  const a = r.state.a, href = `/admin/${r.id}`, name = a.swag.name || a.swag.email || "Anonymous";
   return (
     <ParticipantRow href={href}>
       <TableCell>
-        <Link href={href} className="font-medium underline-offset-4 hover:underline">{a.swag.name || a.swag.email || "Anonymous"}</Link>
+        <Link href={href} className="font-medium underline-offset-4 hover:underline">{name}</Link>
         <span className="ml-2 font-mono text-xs text-muted-foreground">{r.id.slice(0, 6)}</span>
       </TableCell>
       <TableCell>{dash(a.role)}</TableCell>
@@ -73,6 +74,7 @@ function Row({ r }: { r: ResponseRow }) {
       <TableCell className="tabular-nums">{dash(a.nps)}</TableCell>
       <TableCell>{dash(a.swag.size)}</TableCell>
       <TableCell className="text-muted-foreground">{fmtDate(r.updatedAt)}</TableCell>
+      <TableCell className="py-1 pr-2 text-right"><DeleteParticipant id={r.id} name={name} /></TableCell>
     </ParticipantRow>
   );
 }
