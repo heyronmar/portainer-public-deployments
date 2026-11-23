@@ -56,7 +56,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: concept-test
-          image: ghcr.io/heyronmar/concept-testing-app:sha-f5c8fd03d652e5d5b3d4a16a0b60367f3375e2d5
+          image: ghcr.io/heyronmar/concept-testing-app:sha-04c80b7ea12efa60e148e72bcd6b562fc45cda73
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
