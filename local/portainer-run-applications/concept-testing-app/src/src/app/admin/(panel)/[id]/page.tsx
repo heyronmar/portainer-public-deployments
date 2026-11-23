@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { WordTag } from "@/components/concept-test/fields";
 import { getResponse } from "@/lib/db";
 import { progressLabel } from "@/lib/report";
-import { STEPS, type WordPicks } from "@/lib/survey";
+import { STEPS, roleLabel, type WordPicks } from "@/lib/survey";
 import { dash, fmtDate } from "../format";
 
 export default function ParticipantPage({ params }: PageProps<"/admin/[id]">) {
@@ -40,7 +40,7 @@ async function Participant({ params }: { params: PageProps<"/admin/[id]">["param
 
       <Section title="1. Current Portainer">
         <Pairs items={[
-          ["Role", a.role], ["Using Portainer for", a.usage], ["Frequency", a.frequency], ["Other tools", a.tools.join(", ")],
+          ["Role", roleLabel(a)], ["Using Portainer for", a.usage], ["Frequency", a.frequency], ["Other tools", a.tools.join(", ")],
           ["Satisfaction (1–5)", a.satisfaction], ["Ease (1–7)", a.ease],
         ]} />
         <Long label="What they like" text={a.likes} />
@@ -64,7 +64,7 @@ async function Participant({ params }: { params: PageProps<"/admin/[id]">["param
       <Section title="6. Swag (personal data)">
         <Pairs items={[
           ["Name", sw.name], ["Email", sw.email], ["Company", sw.company], ["Street address", sw.address],
-          ["City", sw.city], ["Postcode", sw.postcode], ["Country", sw.country], ["T-shirt size", sw.size], ["Consent", sw.consent ? "Yes" : "No"],
+          ["City", sw.city], ["Postcode", sw.postcode], ["Country", sw.country], ["Hoodie size", sw.size], ["Consent", sw.consent ? "Yes" : "No"],
         ]} />
       </Section>
     </>

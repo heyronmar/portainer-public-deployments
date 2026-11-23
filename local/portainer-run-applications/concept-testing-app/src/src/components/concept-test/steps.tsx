@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import {
-  CalendarDays, Check, CalendarRange, Clock, Copy, ExternalLink, KeyRound, Hand, History, MessageCircleHeart,
-  Scale as ScaleIcon, Shirt, Snail, Sparkles, Sun, ThumbsDown, ThumbsUp,
+  CalendarDays, Check, CalendarRange, Clock, Copy, ExternalLink, Info, KeyRound, Hand, History, MessageCircleHeart,
+  Scale as ScaleIcon, Snail, Sparkles, Sun, ThumbsDown, ThumbsUp,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,11 +12,11 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  FOLLOW_UP, FREQUENCY, NEG, PICK_MAX, PICK_MIN, POS, PREFERENCES, ROLES, SIZES, STEPS, STEP_COUNT, TASKS, TOOL_LEN, TOOLS_MAX, USAGE,
+  FOLLOW_UP, FREQUENCY, NEG, NEG_MIN, PICK_MAX, PICK_MIN, POS, PREFERENCES, ROLE_OTHER, ROLES, SIZES, STEPS, STEP_COUNT, TASKS, TOOL_LEN, TOOLS_MAX, USAGE,
   type Answers, type Errors, type State, type Swag, type WordKey,
 } from "@/lib/survey";
 import { cn } from "@/lib/utils";
-import { Confetti, Dots, StepArt } from "./art";
+import { Confetti, Dots, Hoodie, StepArt } from "./art";
 import { Chips, FaceScale, Field, FieldError, Panel, Scale, TagInput, WordCard, WordTag, type Tone } from "./fields";
 
 export type StepProps = {
@@ -62,8 +62,8 @@ const ic = "size-5";
 const FREQUENCY_ICONS = { Daily: <Sun className={ic} />, Weekly: <CalendarDays className={ic} />, Monthly: <CalendarRange className={ic} />, Rarely: <Snail className={ic} /> };
 const PREFERENCE_ICONS = { "Current Portainer": <History className={ic} />, "Portainer V3": <Sparkles className={ic} />, "No preference": <ScaleIcon className={ic} /> };
 const FOLLOW_UP_ICONS = { "Yes, happy to chat": <MessageCircleHeart className={ic} />, "No thanks": <Hand className={ic} /> };
-// The shirt grows with the size.
-const SIZE_ICONS = Object.fromEntries(SIZES.map((x, i) => [x, <Shirt key={x} style={{ width: 14 + i * 2, height: 14 + i * 2 }} />]));
+// The hoodie grows with the size.
+const SIZE_ICONS = Object.fromEntries(SIZES.map((x, i) => [x, <Hoodie key={x} style={{ width: 14 + i * 2, height: 14 + i * 2 }} />]));
 
 /** NPS bands: detractor, passive, promoter. */
 const npsTone = (n: number): Tone => (n <= 6 ? "neg" : n <= 8 ? "warn" : "pos");
@@ -82,13 +82,15 @@ function TextArea({ id, k, placeholder, invalid, ...p }: StepProps & { id: strin
   );
 }
 
-function OptionSelect({ id, value, options, onChange, invalid }: { id: string; value: string; options: string[]; onChange: (v: string) => void; invalid?: boolean }) {
+function OptionSelect({ id, value, options, onChange, invalid, onCloseAutoFocus }: {
+  id: string; value: string; options: string[]; onChange: (v: string) => void; invalid?: boolean; onCloseAutoFocus?: (e: Event) => void;
+}) {
   return (
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger id={id} className="h-11! w-full rounded-xl px-3.5 text-[15px]" aria-invalid={invalid || undefined} aria-describedby={invalid ? `${id}-error` : undefined}>
         <SelectValue placeholder="Select…" />
       </SelectTrigger>
-      <SelectContent position="popper">
+      <SelectContent position="popper" onCloseAutoFocus={onCloseAutoFocus}>
         {options.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
       </SelectContent>
     </Select>
@@ -98,7 +100,8 @@ function OptionSelect({ id, value, options, onChange, invalid }: { id: string; v
 /* ---------- 1. Current Portainer ---------- */
 
 export function StepCurrent(p: StepProps) {
-  const { s, set, errors: e } = p, a = s.a;
+  const { s, set, save, errors: e } = p, a = s.a;
+  const focusOther = useRef(false);
   return (
     <>
       <Head step={1} title="How does Portainer feel today?" eyebrow={<Cheer>Nice to meet you!</Cheer>}>
@@ -107,7 +110,21 @@ export function StepCurrent(p: StepProps) {
       <Panel>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field name="role" htmlFor="role" label="Your role" required error={e.role}>
-            <OptionSelect id="role" value={a.role} options={ROLES} invalid={!!e.role} onChange={(v) => set((d) => { d.a.role = v; }, true)} />
+            <OptionSelect id="role" value={a.role} options={ROLES} invalid={!!e.role} onChange={(v) => { focusOther.current = v === ROLE_OTHER; set((d) => { d.a.role = v; }, true); }}
+              onCloseAutoFocus={(ev) => {
+                // Picking Other reveals a text box; send focus there instead of back to the select.
+                if (!focusOther.current) return;
+                focusOther.current = false;
+                ev.preventDefault();
+                requestAnimationFrame(() => document.getElementById("roleOther")?.focus());
+              }} />
+            {a.role === ROLE_OTHER && (
+              <Input id="roleOther" value={a.roleOther} placeholder="Type your role" aria-label="Your role (other)" maxLength={200}
+                className="h-11 rounded-xl px-3.5 text-[15px] motion-safe:animate-rise md:text-[15px]"
+                aria-invalid={!!e.roleOther || undefined} aria-describedby={e.roleOther ? "roleOther-error" : undefined}
+                onChange={(ev) => set((d) => { d.a.roleOther = ev.target.value; })} onBlur={save} />
+            )}
+            <FieldError name="roleOther" error={e.roleOther} />
           </Field>
           <Field name="usage" htmlFor="usage" label="How long have you used Portainer?" required error={e.usage}>
             <OptionSelect id="usage" value={a.usage} options={USAGE} invalid={!!e.usage} onChange={(v) => set((d) => { d.a.usage = v; }, true)} />
@@ -116,7 +133,7 @@ export function StepCurrent(p: StepProps) {
         <Field name="frequency" label="How often do you use Portainer?">
           <Chips name="frequency" options={FREQUENCY} icons={FREQUENCY_ICONS} value={a.frequency} onChange={(v) => set((d) => { d.a.frequency = v; }, true)} />
         </Field>
-        <Field name="tools" htmlFor="tools" label="What other tools do you use alongside Portainer?" hint="Separate them with commas or press Enter.">
+        <Field name="tools" htmlFor="tools" label="What other day-to-day tools do you use alongside Portainer?" hint="Separate them with commas or press Enter.">
           <TagInput id="tools" value={a.tools} max={TOOLS_MAX} maxLength={TOOL_LEN} placeholder="e.g. Rancher, Lens, kubectl, Docker Desktop"
             onChange={(v) => set((d) => { d.a.tools = v; }, true)} />
         </Field>
@@ -160,7 +177,7 @@ export function StepWords({ which, ...p }: StepProps & { which: WordKey }) {
             <span aria-hidden className={cn("grid size-9 place-items-center rounded-xl", kind === "pos" ? "bg-pos-soft text-pos" : "bg-neg-soft text-neg")}>
               {kind === "pos" ? <ThumbsUp className="size-4.5" /> : <ThumbsDown className="size-4.5" />}
             </span>
-            <span id={`${key}-label`} className="text-[15px] font-semibold">{kind === "pos" ? <>Positive words<span className="text-neg"> *</span></> : <>Negative words <span className="font-normal text-muted-foreground">(optional)</span></>}</span>
+            <span id={`${key}-label`} className="text-[15px] font-semibold">{kind === "pos" ? "Positive" : "Negative"} words<span className="text-neg"> *</span></span>
           </span>
           <span className="flex items-center gap-2 text-xs text-muted-foreground">
             <span aria-hidden className="flex gap-1">
@@ -171,6 +188,9 @@ export function StepWords({ which, ...p }: StepProps & { which: WordKey }) {
             <span className="font-mono">{picked.length}/{PICK_MAX} picked</span>
           </span>
         </div>
+        {kind === "neg" && (
+          <p className="-mt-1 text-[13px] text-muted-foreground">Pick at least {NEG_MIN}. Every tool has rough edges, and knowing yours helps us the most.</p>
+        )}
         <div role="group" aria-labelledby={`${key}-label`} className="flex flex-wrap gap-2.5">
           {list.map((x) => {
             const on = picked.includes(x);
@@ -185,13 +205,13 @@ export function StepWords({ which, ...p }: StepProps & { which: WordKey }) {
   return (
     <>
       <Head step={before ? 2 : 4} title={before ? "Describe the current Portainer UI" : "Now describe the V3 UI"} eyebrow={<Cheer>{before ? "Quick one" : "Before vs after"}</Cheer>}>
-        Pick {PICK_MIN}–{PICK_MAX} positive words and, if any apply, up to {PICK_MAX} negative words that best describe {before ? "your experience with Portainer today" : "what you saw in the V3 demo"}. Then tell us why you picked each one.
+        Pick {PICK_MIN}–{PICK_MAX} positive words and {NEG_MIN}–{PICK_MAX} negative words that best describe {before ? "your experience with Portainer today" : "what you saw in the V3 demo"}. Then tell us why you picked each one.
       </Head>
       <Panel>{group("pos", POS)}{group("neg", NEG)}</Panel>
       {all.length > 0 && (
         <Panel>
           <div className="flex flex-col gap-1">
-            <span className="text-[15px] font-semibold">Why did you pick these?</span>
+            <span className="text-[15px] font-semibold">Why did you pick these?<span className="text-neg"> *</span></span>
             <span className="text-[13px] text-muted-foreground">A sentence or two each is plenty.</span>
           </div>
           {all.map(([k, x]) => {
@@ -221,14 +241,14 @@ export function StepDemo(p: StepProps) {
   return (
     <>
       <Head step={3} title="Take Portainer V3 for a spin" eyebrow={<Cheer>The fun part</Cheer>}>
-        The demo opens in a new tab. Spend 5–10 minutes clicking around and poke at anything you like: it&apos;s a sandbox, so you can&apos;t break anything real. Come back to this tab when you&apos;re done.
+        Open the demo, look around, and see how the new UI compares to the Portainer you use today.
       </Head>
       <div data-field="openedDemo" className="flex flex-col gap-2">
         <Panel className="grid items-center gap-6 border-2 border-brand/40 bg-brand-soft sm:grid-cols-[auto_minmax(0,1fr)]">
           <BrowserArt opened={s.openedDemo} />
           <div className="flex min-w-0 flex-col items-start gap-3">
             <div className="flex min-w-0 flex-col gap-1">
-              <b className="text-lg">Portainer V3 demo</b>
+              <b className="text-lg">Portainer V3 demo<span className="text-neg"> *</span></b>
               <code className="font-mono text-[12.5px] break-all text-muted-foreground">{demoUrl.replace(/^https?:\/\//, "")}</code>
               {s.openedDemo && <span className="text-[13px] text-pos">Opened. Switch back to that tab any time.</span>}
             </div>
@@ -247,6 +267,13 @@ export function StepDemo(p: StepProps) {
               </div>
             </div>
           )}
+          <p className="flex items-start gap-2.5 text-[14px] text-muted-foreground sm:col-span-2">
+            <Info className="mt-0.5 size-4 shrink-0 text-brand" />
+            <span>
+              Spend 5–10 minutes exploring how the new UI looks and feels. It&apos;s an early preview, so there might be a few bugs. It&apos;s also a
+              sandbox, so you can&apos;t break anything real. Come back to this tab when you&apos;re done.
+            </span>
+          </p>
         </Panel>
         <FieldError name="openedDemo" error={e.openedDemo} />
       </div>
@@ -265,8 +292,8 @@ export function StepDemo(p: StepProps) {
             </label>
           ))}
         </div>
-        <Field name="demoNotes" htmlFor="demoNotes" label="Anything you noticed while exploring?">
-          <TextArea {...p} id="demoNotes" k="demoNotes" placeholder="First impressions, surprises, things you couldn't find" />
+        <Field name="demoNotes" htmlFor="demoNotes" label="What did you think of the new UI?">
+          <TextArea {...p} id="demoNotes" k="demoNotes" placeholder="e.g. Your first impressions, what stood out, how it compares to today" />
         </Field>
       </Panel>
     </>
@@ -279,7 +306,7 @@ export function StepFinal(p: StepProps) {
   const { s, set, errors: e } = p, a = s.a;
   return (
     <>
-      <Head step={5} title="Final thoughts" eyebrow={<Cheer>Almost at your swag</Cheer>}>A few last questions comparing what you use today with V3. Your swag is the next step.</Head>
+      <Head step={5} title="Final thoughts" eyebrow={<Cheer>Almost there</Cheer>}>A few last questions comparing what you use today with V3.</Head>
       <Panel>
         <Field name="preference" label="Which would you rather use day to day?" required error={e.preference}>
           <Chips name="preference" options={PREFERENCES} icons={PREFERENCE_ICONS} cols="grid-cols-3 sm:grid-cols-3" value={a.preference} invalid={!!e.preference} onChange={(v) => set((d) => { d.a.preference = v; }, true)} />
@@ -326,8 +353,8 @@ export function StepSwag(p: StepProps) {
   };
   return (
     <>
-      <Head step={6} title="Claim your free Portainer swag" eyebrow={<Cheer>You made it!</Cheer>}>
-        Thank you for sharing your time and honest feedback. Tell us where to send your t-shirt and swag pack. We only use these details to ship your swag{s.a.followUp === "Yes, happy to chat" ? " and to follow up as you agreed" : ""}.
+      <Head step={6} title="Claim your free Portainer Hoodie" eyebrow={<Cheer>You made it!</Cheer>}>
+        Thank you for sharing your time and honest feedback. Tell us where to send your Portainer Hoodie. We only use these details to ship your hoodie{s.a.followUp === "Yes, happy to chat" ? " and to follow up as you agreed" : ""}.
       </Head>
       <Panel>
         <div className="grid gap-4 sm:grid-cols-2">{input("name", "Full name")}{input("email", "Email", { type: "email" })}</div>
@@ -335,7 +362,7 @@ export function StepSwag(p: StepProps) {
         {input("address", "Street address", { placeholder: "Street, unit, building" })}
         <div className="grid gap-4 sm:grid-cols-2">{input("city", "City")}{input("postcode", "Postcode")}</div>
         {input("country", "Country")}
-        <Field name="swag.size" label="T-shirt size" required error={e["swag.size"]}>
+        <Field name="swag.size" label="Hoodie size" required error={e["swag.size"]}>
           <Chips name="swag.size" options={SIZES} icons={SIZE_ICONS} cols="grid-cols-4 sm:grid-cols-7" value={sw.size} invalid={!!e["swag.size"]} onChange={(v) => set((d) => { d.a.swag.size = v; }, true)} />
         </Field>
         <div data-field="swag.consent" className="flex flex-col gap-2">
@@ -343,7 +370,7 @@ export function StepSwag(p: StepProps) {
             className="flex cursor-pointer items-start gap-3 rounded-xl border-2 border-border px-3.5 py-3 transition-colors hover:border-muted-foreground/60 has-data-[state=checked]:border-pos has-data-[state=checked]:bg-pos-soft">
             <Checkbox id="consent" className="mt-0.5" checked={sw.consent} aria-invalid={!!e["swag.consent"] || undefined}
               onCheckedChange={(c) => set((d) => { d.a.swag.consent = c === true; }, true)} />
-            <span>I agree that Portainer can use these details to ship my swag.<span className="text-neg"> *</span></span>
+            <span>I agree that Portainer can use these details to ship my hoodie.<span className="text-neg"> *</span></span>
           </label>
           <FieldError name="swag.consent" error={e["swag.consent"]} />
         </div>
@@ -367,7 +394,7 @@ export function StepDone({ s }: StepProps) {
       <div className="relative">
         <Confetti />
         <Head title={`Thank you${first ? `, ${first}` : ""}`} eyebrow={<Badge className="bg-pos text-white dark:text-background">Session complete</Badge>}>
-          Your feedback is in and so is your swag request. You&apos;ve helped shape what Portainer V3 becomes. You can go back to any step to review or change an answer until we close the study.
+          Your feedback is in and so is your hoodie request. You&apos;ve helped shape what Portainer V3 becomes. The study closes on 18 December, and we&apos;ll start shipping hoodies after that. Until then, you can go back to any step to review or change an answer.
         </Head>
       </div>
       <Panel>

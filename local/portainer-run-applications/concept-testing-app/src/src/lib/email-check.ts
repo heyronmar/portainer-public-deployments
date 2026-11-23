@@ -3,7 +3,7 @@ import { resolve4, resolve6, resolveMx } from "node:dns/promises";
 import { isDisposableDomain } from "./disposable-domains";
 import { emailProblem } from "./survey";
 
-const THROWAWAY = "That looks like a test or throwaway email domain. Please use your real email so we can send your swag.";
+const THROWAWAY = "That looks like a test or throwaway email domain. Please use your real email so we can send your hoodie.";
 const NO_DOMAIN = "We couldn't find that email domain. Check for typos, or use another email address.";
 const DNS_TIMEOUT_MS = 3000;
 

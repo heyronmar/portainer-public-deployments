@@ -4,9 +4,17 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import {
   Compass, Gauge, Gift, Heart, Lightbulb, MessageSquareText, MessagesSquare, MousePointerClick, Package, PartyPopper,
-  Shirt, Sparkles, Star, ThumbsDown, ThumbsUp, Trophy, Zap, type LucideIcon,
+  Sparkles, Star, ThumbsDown, ThumbsUp, Trophy, Zap, createLucideIcon, type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+/** Lucide has no hoodie, so this one is drawn on the same 24px grid and stroke. */
+export const Hoodie = createLucideIcon("Hoodie", [
+  ["path", { d: "M8.5 4.8 5 6a2 2 0 0 0-1.3 1.7L3 18a1 1 0 0 0 1 1h1.5a1 1 0 0 0 1-.9L7 11.5V20a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-8.5l.5 6.6a1 1 0 0 0 1 .9H20a1 1 0 0 0 1-1l-.7-10.3A2 2 0 0 0 19 6l-3.5-1.2", key: "body" }],
+  ["path", { d: "M8 6.5C8 3.8 9.8 2 12 2s4 1.8 4 4.5c0 1.6-1.8 2.5-4 2.5s-4-.9-4-2.5Z", key: "hood" }],
+  ["path", { d: "M10.5 9v3", key: "string-l" }],
+  ["path", { d: "M13.5 9v3", key: "string-r" }],
+]);
 
 /** Big brand tile with two small tiles floating around it. Index 6 is the thank-you screen. */
 const ART: [LucideIcon, LucideIcon, LucideIcon][] = [
@@ -15,7 +23,7 @@ const ART: [LucideIcon, LucideIcon, LucideIcon][] = [
   [Compass, MousePointerClick, Sparkles],
   [MessagesSquare, ThumbsUp, ThumbsDown],
   [Lightbulb, Star, Heart],
-  [Gift, Shirt, Package],
+  [Gift, Hoodie, Package],
   [PartyPopper, Trophy, Star],
 ];
 
@@ -37,7 +45,7 @@ export function StepArt({ step }: { step: number }) {
   );
 }
 
-/** The thank-you pack: a Portainer t-shirt with stickers around it, for the intro. */
+/** The thank-you pack: a Portainer hoodie with stickers around it, for the intro. */
 export function SwagArt() {
   return (
     <div aria-hidden className="relative mx-auto size-52 sm:size-56">
@@ -46,10 +54,16 @@ export function SwagArt() {
       <div className="absolute inset-0 grid place-items-center motion-safe:animate-float">
         <div className="relative w-36 -rotate-3 drop-shadow-xl sm:w-40">
           <svg viewBox="0 0 120 110" className="w-full text-slate-900 dark:text-slate-700">
-            <path d="M40 6 L19 13 L3 34 L18 47 L28 40 L28 104 L92 104 L92 40 L102 47 L117 34 L101 13 L80 6 Q60 22 40 6 Z" fill="currentColor" />
-            <path d="M40 6 Q60 22 80 6" fill="none" stroke="white" strokeOpacity="0.25" strokeWidth="2.5" />
+            <path d="M40 15 L20 21 Q9 25 8 36 L4 91 Q4 96 9 96 L18 96 Q23 96 23 91 L27 50 L27 101 Q27 106 32 106 L88 106 Q93 106 93 101 L93 50 L97 91 Q97 96 102 96 L111 96 Q116 96 116 91 L112 36 Q111 25 100 21 L80 15 Z" fill="currentColor" />
+            {/* hood, its opening, drawstrings, pocket, then cuff and hem seams */}
+            <path d="M39 16 Q38 3 60 2 Q82 3 81 16 Q80 31 60 33 Q40 31 39 16 Z" fill="currentColor" />
+            <path d="M39 16 Q38 3 60 2 Q82 3 81 16 Q80 31 60 33 Q40 31 39 16 Z" fill="white" fillOpacity="0.07" />
+            <path d="M47 17 Q47 8 60 8 Q73 8 73 17 Q72 26 60 27 Q48 26 47 17 Z" fill="black" fillOpacity="0.45" />
+            <path d="M55 30 L54 45 M65 30 L66 45" stroke="white" strokeOpacity="0.55" strokeWidth="2" strokeLinecap="round" />
+            <path d="M41 88 L46 74 H74 L79 88" fill="none" stroke="white" strokeOpacity="0.2" strokeWidth="2" strokeLinejoin="round" />
+            <path d="M28 99 H92 M5 89 H22 M98 89 H115" stroke="white" strokeOpacity="0.15" strokeWidth="2" />
           </svg>
-          <Image src="/logo/portainer.svg" alt="" width={36} height={36} unoptimized className="absolute top-[40%] left-1/2 size-8 -translate-x-1/2 rounded-md sm:size-9" />
+          <Image src="/logo/portainer.svg" alt="" width={36} height={36} unoptimized className="absolute top-[47%] left-1/2 size-8 -translate-x-1/2 rounded-md sm:size-9" />
         </div>
       </div>
       <div className="absolute top-3 left-1 grid size-14 -rotate-12 place-items-center rounded-full bg-card font-mono text-lg font-bold text-brand shadow-md ring-2 ring-brand/30 motion-safe:animate-float motion-safe:[animation-delay:-1.5s]">V3</div>

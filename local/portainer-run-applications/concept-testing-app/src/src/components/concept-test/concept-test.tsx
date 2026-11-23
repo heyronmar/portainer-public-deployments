@@ -231,7 +231,7 @@ export function ConceptTest() {
                   )}
                   <Button size="lg" className="h-11 rounded-full bg-brand px-7 text-[15px] text-brand-foreground hover:bg-brand/90" onClick={next} disabled={submitting}>
                     {submitting ? <Loader2 className="animate-spin" /> : step >= STEP_COUNT - 2 && <Gift />}
-                    {step === STEP_COUNT - 1 ? "Claim my swag" : step === STEP_COUNT - 2 ? "On to my swag" : "Continue →"}
+                    {step === STEP_COUNT - 1 ? "Claim my hoodie" : "Continue →"}
                   </Button>
                 </div>
               </>
@@ -246,7 +246,7 @@ export function ConceptTest() {
 const INTRO_STEPS = [
   { icon: MessageSquareText, text: "Tell us how Portainer feels today" },
   { icon: Compass, text: "Take the V3 demo for a spin" },
-  { icon: Gift, text: "Claim your free swag" },
+  { icon: Gift, text: "Claim your free hoodie" },
 ];
 
 function Intro({ email, error, notice, checking, onChange, onBlur, onContinue }: {
@@ -260,7 +260,7 @@ function Intro({ email, error, notice, checking, onChange, onBlur, onContinue }:
         <div className="flex max-w-[calc(100vw-2rem)] flex-col gap-3 sm:w-[640px]">
           <h1 className="text-[30px] leading-tight font-semibold tracking-tight text-balance sm:text-[34px] sm:whitespace-nowrap">Help us shape Portainer&apos;s Experience</h1>
           <p className="text-[16px] text-muted-foreground text-pretty">
-            Be one of the first to try Portainer V3 and tell us what you really think. As a thank-you, we&apos;ll send you a Portainer t-shirt and swag pack.
+            Be one of the first to try Portainer V3 and tell us what you really think. As a thank-you, we&apos;ll send you a Portainer Hoodie.
           </p>
         </div>
         <ol className="grid w-full max-w-[calc(100vw-2rem)] gap-2 sm:w-[680px] sm:grid-cols-3">
@@ -353,8 +353,8 @@ const STEP_CHEERS = [
   "Step 1 done. Great start!",
   "Nice picks! Now for the fun part.",
   "Thanks for exploring. Just a few quick ones left.",
-  "Two steps to go. Your swag is in sight.",
-  "Last stop: tell us where to send your swag.",
+  "Two steps to go. You're nearly there.",
+  "Last stop: tell us where to send your hoodie.",
 ];
 
 function SwagGoal({ left }: { left: number }) {
@@ -364,7 +364,7 @@ function SwagGoal({ left }: { left: number }) {
         <Gift className="size-4.5" />
       </span>
       <span className="leading-snug">
-        <b className="block text-[13px] text-foreground">{left ? "Free swag at the finish" : "Swag claimed!"}</b>
+        <b className="block text-[13px] text-foreground">{left ? "Free hoodie at the finish" : "Hoodie claimed!"}</b>
         {left ? `${left} step${left === 1 ? "" : "s"} to go` : "Thanks for taking part"}
       </span>
     </div>

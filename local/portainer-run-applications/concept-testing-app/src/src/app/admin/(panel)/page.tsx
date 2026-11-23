@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { listResponses, type ResponseRow } from "@/lib/db";
 import { progressLabel, sentiment, summary } from "@/lib/report";
+import { roleLabel } from "@/lib/survey";
 import { dash, fmtDate } from "./format";
 import { DeleteParticipant, ParticipantRow } from "./participant-row";
 import { SentimentCards } from "./sentiment";
@@ -41,7 +42,7 @@ async function Dashboard() {
         <Table>
           <TableHeader className="bg-muted">
             <TableRow>
-              {["Participant", "Role", "Progress", "Sat.", "Ease", "Prefers", "Recommend", "Swag size", "Updated"].map((h) => (
+              {["Participant", "Role", "Progress", "Sat.", "Ease", "Prefers", "Recommend", "Hoodie size", "Updated"].map((h) => (
                 <TableHead key={h} className="text-xs text-muted-foreground">{h}</TableHead>
               ))}
               <TableHead className="w-12"><span className="sr-only">Delete</span></TableHead>
@@ -66,7 +67,7 @@ function Row({ r }: { r: ResponseRow }) {
         <Link href={href} className="font-medium underline-offset-4 hover:underline">{name}</Link>
         <span className="ml-2 font-mono text-xs text-muted-foreground">{r.id.slice(0, 6)}</span>
       </TableCell>
-      <TableCell>{dash(a.role)}</TableCell>
+      <TableCell>{dash(roleLabel(a))}</TableCell>
       <TableCell>{r.submittedAt ? <Badge className="bg-pos-soft text-pos">Complete</Badge> : progressLabel(r)}</TableCell>
       <TableCell className="tabular-nums">{dash(a.satisfaction)}</TableCell>
       <TableCell className="tabular-nums">{dash(a.ease)}</TableCell>

@@ -5,11 +5,31 @@ export const POS = ["Intuitive", "Clean", "Efficient", "Fast", "Organized", "Pow
 export const NEG = ["Cluttered", "Confusing", "Overwhelming", "Slow", "Outdated", "Complex", "Inconsistent", "Frustrating", "Hard to navigate", "Busy", "Rigid", "Tedious", "Hidden", "Too technical", "Fragmented", "Dense"];
 export const PICK_MIN = 1;
 export const PICK_MAX = 3;
+export const NEG_MIN = 2;
 
-export const ROLES = ["Platform / DevOps engineer", "Developer", "SRE / Ops", "IT administrator", "Engineering manager", "Homelab / hobbyist", "Other"];
+export const ROLE_OTHER = "Other (please specify)";
+export const ROLES = [
+  "Platform / DevOps Engineer", "Developer", "SRE / Ops", "IT/Systems Administrator", "Solutions or Enterprise Architect",
+  "Security / Compliance", "OT / Industrial / Edge Engineer", "Engineering or IT Manager", ROLE_OTHER,
+];
+// Answers saved under the earlier role list, so existing responses keep their role.
+const LEGACY_ROLES: Record<string, { role: string; other?: string }> = {
+  "Platform / DevOps engineer": { role: "Platform / DevOps Engineer" },
+  "IT administrator": { role: "IT/Systems Administrator" },
+  "Engineering manager": { role: "Engineering or IT Manager" },
+  "Homelab / hobbyist": { role: ROLE_OTHER, other: "Homelab / hobbyist" },
+  Other: { role: ROLE_OTHER },
+};
+/** The role as researchers should read it: the typed-in text when they picked Other. */
+export const roleLabel = (a: { role: string; roleOther: string }) => (a.role === ROLE_OTHER ? a.roleOther.trim() || "Other" : a.role);
 export const USAGE = ["Less than 6 months", "6–12 months", "1–3 years", "3+ years"];
 export const FREQUENCY = ["Daily", "Weekly", "Monthly", "Rarely"];
-export const TASKS = ["Look around the home dashboard", "Find and open an environment", "Find a running container or workload", "Try deploying or editing something", "Look for settings or user management"];
+export const TASKS = [
+  "Look around the home dashboard", "Find and open an environment", "Find a running container or workload", "Look for settings or user management",
+  // New UI components to look at
+  "Sort and filter a table", "Open your account preferences", "Switch between light and dark mode",
+  "Move between sections using the sidebar", "Open a details page and its tabs", "Check the status badges and icons",
+];
 export const PREFERENCES = ["Current Portainer", "Portainer V3", "No preference"];
 export const FOLLOW_UP = ["Yes, happy to chat", "No thanks"];
 export const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL"];
@@ -22,7 +42,7 @@ export const STEPS = [
   { key: "demo", title: "Explore V3", sub: "Open the demo", mins: 10 },
   { key: "wordsAfter", title: "Pick words", sub: "V3 UI", mins: 2 },
   { key: "final", title: "Final thoughts", sub: "Anything else", mins: 2 },
-  { key: "swag", title: "Claim your swag", sub: "Shipping details", mins: 1 },
+  { key: "swag", title: "Claim your hoodie", sub: "Shipping details", mins: 1 },
 ] as const;
 export const STEP_COUNT = STEPS.length;
 export const DONE_STEP = STEP_COUNT; // step index of the thank-you screen
@@ -31,7 +51,10 @@ export type WordKey = "wordsBefore" | "wordsAfter";
 export type WordPicks = { pos: string[]; neg: string[]; why: Record<string, string> };
 export type Swag = { name: string; email: string; company: string; address: string; city: string; postcode: string; country: string; size: string; consent: boolean };
 export type Answers = {
-  role: string; usage: string; frequency: string;
+  role: string;
+  /** Filled in when role is ROLE_OTHER. */
+  roleOther: string;
+  usage: string; frequency: string;
   /** Other tools they use alongside Portainer, free-text tags. */
   tools: string[];
   satisfaction: number | null; ease: number | null; likes: string; frustrations: string;
@@ -52,7 +75,7 @@ export type State = {
 export const blank = (): State => ({
   step: 0, completed: [], openedDemo: false, introDone: false, startedAt: new Date().toISOString(), submittedAt: null,
   a: {
-    role: "", usage: "", frequency: "", tools: [], satisfaction: null, ease: null, likes: "", frustrations: "",
+    role: "", roleOther: "", usage: "", frequency: "", tools: [], satisfaction: null, ease: null, likes: "", frustrations: "",
     wordsBefore: { pos: [], neg: [], why: {} },
     demoTasks: [], demoNotes: "",
     wordsAfter: { pos: [], neg: [], why: {} },
@@ -93,6 +116,8 @@ function words(v: unknown): WordPicks {
 /** Coerce anything into a well-formed State. Unknown keys and out-of-range values are dropped. */
 export function sanitize(input: unknown): State {
   const s = obj(input), a = obj(s.a), sw = obj(a.swag), b = blank();
+  const legacy = typeof a.role === "string" ? LEGACY_ROLES[a.role] : undefined;
+  const role = legacy?.role ?? oneOf(a.role, ROLES);
   return {
     step: intIn(s.step, 0, DONE_STEP) ?? 0,
     completed: Array.isArray(s.completed) ? [...new Set(s.completed.filter((i): i is number => intIn(i, 0, STEP_COUNT - 1) !== null))].sort() : [],
@@ -102,7 +127,7 @@ export function sanitize(input: unknown): State {
     submittedAt: str(s.submittedAt, 40) || null,
     updatedAt: str(s.updatedAt, 40) || undefined,
     a: {
-      role: oneOf(a.role, ROLES), usage: oneOf(a.usage, USAGE), frequency: oneOf(a.frequency, FREQUENCY), tools: tags(a.tools),
+      role, roleOther: role === ROLE_OTHER ? str(a.roleOther, 200) || legacy?.other || "" : "", usage: oneOf(a.usage, USAGE), frequency: oneOf(a.frequency, FREQUENCY), tools: tags(a.tools),
       satisfaction: intIn(a.satisfaction, 1, 5), ease: intIn(a.ease, 1, 7), likes: str(a.likes), frustrations: str(a.frustrations),
       wordsBefore: words(a.wordsBefore),
       demoTasks: pick(a.demoTasks, TASKS), demoNotes: str(a.demoNotes),
@@ -151,9 +176,9 @@ export function emailProblem(raw: string): string | null {
   const [local, domain] = [email.slice(0, email.lastIndexOf("@")), email.slice(email.lastIndexOf("@") + 1)];
   const tld = domain.slice(domain.lastIndexOf(".") + 1);
   if (DUMMY_DOMAINS.has(domain) || [...DUMMY_DOMAINS].some((d) => domain.endsWith(`.${d}`)) || DUMMY_TLDS.includes(tld))
-    return "That looks like a test or throwaway email domain. Please use your real email so we can send your swag.";
+    return "That looks like a test or throwaway email domain. Please use your real email so we can send your hoodie.";
   if (DUMMY_LOCAL.test(local.replace(/[._+]/g, "")))
-    return "That looks like a placeholder address. Please use your real email so we can send your swag.";
+    return "That looks like a placeholder address. Please use your real email so we can send your hoodie.";
   return null;
 }
 
@@ -166,6 +191,7 @@ export function validateIntro(s: State): Errors {
 function validCurrent(s: State): Errors {
   const a = s.a, e: Errors = {};
   if (!a.role) e.role = "Select your role.";
+  else if (a.role === ROLE_OTHER && !a.roleOther.trim()) e.roleOther = "Tell us your role.";
   if (!a.usage) e.usage = "Select how long you've used Portainer.";
   if (!a.satisfaction) e.satisfaction = REQUIRED;
   if (!a.ease) e.ease = REQUIRED;
@@ -177,6 +203,7 @@ function validCurrent(s: State): Errors {
 function validWords(s: State, which: WordKey): Errors {
   const w = s.a[which], e: Errors = {};
   if (w.pos.length < PICK_MIN) e[`${which}.pos`] = "Pick at least one positive word.";
+  if (w.neg.length < NEG_MIN) e[`${which}.neg`] = `Pick at least ${NEG_MIN} negative words. Even small annoyances count.`;
   for (const x of [...w.pos, ...w.neg]) if (!(w.why[x] || "").trim()) e[`${which}.why.${x}`] = "Add a short reason for this word.";
   return e;
 }
@@ -200,8 +227,8 @@ function validSwag(s: State): Errors {
     const problem = emailProblem(sw.email);
     if (problem) e["swag.email"] = problem;
   }
-  if (!sw.size) e["swag.size"] = "Pick a t-shirt size.";
-  if (!sw.consent) e["swag.consent"] = "Please tick the consent box so we can ship your swag.";
+  if (!sw.size) e["swag.size"] = "Pick a hoodie size.";
+  if (!sw.consent) e["swag.consent"] = "Please tick the consent box so we can ship your hoodie.";
   return e;
 }
 

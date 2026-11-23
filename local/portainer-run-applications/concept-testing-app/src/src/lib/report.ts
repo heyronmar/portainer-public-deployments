@@ -1,6 +1,6 @@
 // Aggregates and CSV for the researcher view.
 import type { ResponseRow } from "./db";
-import { STEP_COUNT, type WordKey, type WordPicks } from "./survey";
+import { STEP_COUNT, roleLabel, type WordKey, type WordPicks } from "./survey";
 
 export function summary(rows: ResponseRow[]) {
   const sats = rows.map((r) => r.state.a.satisfaction).filter((x): x is number => x !== null);
@@ -55,7 +55,7 @@ export function sentiment(rows: ResponseRow[], which: WordKey): Sentiment {
         const e = words.get(word) ?? { word, kind, count: 0, comments: [], themes: [], other: { count: 0, people: theirs.length } };
         e.count++;
         const text = (r.state.a[which].why[word] ?? "").trim();
-        if (text) e.comments.push({ id: r.id, role: r.state.a.role, text });
+        if (text) e.comments.push({ id: r.id, role: roleLabel(r.state.a), text });
         words.set(word, e);
       }
   for (const e of words.values()) {
@@ -76,7 +76,7 @@ const COLUMNS: [string, (r: ResponseRow) => unknown][] = [
   ["submitted_at", (r) => r.submittedAt],
   ["step", (r) => r.step],
   ["steps_completed", (r) => r.state.completed.length],
-  ["role", (r) => r.state.a.role],
+  ["role", (r) => roleLabel(r.state.a)],
   ["usage", (r) => r.state.a.usage],
   ["frequency", (r) => r.state.a.frequency],
   ["other_tools", (r) => r.state.a.tools.join("; ")],
