@@ -65,13 +65,14 @@ export function deleteResponse(id: string): boolean {
   return db().prepare("DELETE FROM responses WHERE id = ?").run(id).changes > 0;
 }
 
-/** Whether a different response already uses this mailbox (see emailKey), so one email can't start the study twice. */
-export function emailTaken(email: string, exceptId: string, { submittedOnly = false } = {}): boolean {
+/** Another started response using this mailbox (see emailKey): the submitted one, else the furthest along, else the latest. */
+export function findByEmail(email: string, exceptId: string, { submittedOnly = false } = {}): ResponseRow | null {
   const key = emailKey(email);
-  if (!key) return false;
-  const rows = db().prepare(`SELECT json_extract(data, '$.a.swag.email') AS email FROM responses WHERE id != ?${submittedOnly ? " AND submitted_at IS NOT NULL" : ""}`)
-    .all(exceptId) as { email: unknown }[];
-  return rows.some((r) => typeof r.email === "string" && emailKey(r.email) === key);
+  if (!key) return null;
+  const rows = (db().prepare(`SELECT * FROM responses WHERE id != ? AND json_extract(data, '$.introDone') = 1${submittedOnly ? " AND submitted_at IS NOT NULL" : ""}`).all(exceptId) as RawRow[])
+    .filter((r) => { const e = (JSON.parse(r.data) as { a?: { swag?: { email?: unknown } } }).a?.swag?.email; return typeof e === "string" && emailKey(e) === key; })
+    .sort((a, b) => Number(!!b.submitted_at) - Number(!!a.submitted_at) || b.step - a.step || b.updated_at.localeCompare(a.updated_at));
+  return rows.length ? toRow(rows[0]) : null;
 }
 
 export function listResponses(): ResponseRow[] {

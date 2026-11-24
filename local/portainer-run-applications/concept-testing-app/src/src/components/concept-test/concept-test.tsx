@@ -67,7 +67,7 @@ export function ConceptTest() {
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw Object.assign(new Error(json.error || "Save failed"), { status: res.status, body: json });
       setStatus("saved");
-      return json as { state: State };
+      return json as { state: State; id?: string; resumed?: boolean };
     });
     chain.current = run.catch(() => setStatus("error"));
     return run;
@@ -130,7 +130,13 @@ export function ConceptTest() {
       ref.current = { ...before, introDone: true, a: { ...before.a, swag: { ...before.a.swag, email: before.a.swag.email.trim() } } };
       setChecking(true);
       try {
-        await save();
+        const json = await save();
+        if (json?.resumed && json.id) {
+          // This email already has a response, so carry on from where it was left.
+          ref.current = json.state;
+          setSession((x) => x && { ...x, id: json.id! });
+          setNotice("Welcome back! We've opened your survey where you left off.");
+        }
         setS(ref.current);
         window.scrollTo(0, 0);
       } catch (err) {
@@ -152,6 +158,7 @@ export function ConceptTest() {
     if (!isUnlocked(s, i) && i !== DONE_STEP) return;
     setShowErrors(false);
     setCheered(null);
+    setNotice("");
     set((d) => { d.step = i; }, true);
     window.scrollTo(0, 0);
   };

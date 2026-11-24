@@ -1,10 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createResponse, emailTaken, getResponse, saveResponse } from "@/lib/db";
+import { createResponse, deleteResponse, findByEmail, getResponse, saveResponse } from "@/lib/db";
 import { serverEmailProblem } from "@/lib/email-check";
 import { COOKIE, setIdCookie } from "@/lib/session";
 import { DONE_STEP, STEP_COUNT, sanitize, validateStep } from "@/lib/survey";
 
-const TAKEN_START = "This email has already been used to start the study. Open the browser you used before, or your resume link, to pick up where you left off.";
 const TAKEN_SUBMIT = "This email has already been used to submit the study, so it can't be used again.";
 
 const demoUrl = () => process.env.DEMO_URL || "https://portainer-laptop.heyronmar.com";
@@ -38,13 +37,21 @@ export async function PUT(req: NextRequest) {
   next.submittedAt = row.state.submittedAt;
 
   // Check the email when they leave the intro and again on submit, so dummy addresses can't skip the form's check.
-  // One response per email: a new start can't reuse any email on file; a submit can't reuse one that was already submitted.
+  // One response per email: starting with an email on file reopens that response; a submit can't reuse an already-submitted email.
   const starting = next.introDone && !row.state.introDone;
   if (starting || body.submit) {
-    const taken = starting ? emailTaken(next.a.swag.email, row.id) && TAKEN_START : emailTaken(next.a.swag.email, row.id, { submittedOnly: true }) && TAKEN_SUBMIT;
-    const problem = (await serverEmailProblem(next.a.swag.email)) || taken;
+    const problem = (await serverEmailProblem(next.a.swag.email))
+      || (!starting && findByEmail(next.a.swag.email, row.id, { submittedOnly: true }) && TAKEN_SUBMIT);
     if (problem) {
       return NextResponse.json({ error: problem, step: starting ? -1 : STEP_COUNT - 1, errors: { "swag.email": problem } }, { status: 422 });
+    }
+    const earlier = starting ? findByEmail(next.a.swag.email, row.id) : null;
+    if (earlier) {
+      // This row only holds the email just typed, so drop it and point the browser at the earlier one.
+      deleteResponse(row.id);
+      const res = NextResponse.json({ id: earlier.id, state: earlier.state, resumed: true });
+      setIdCookie(req, res, earlier.id);
+      return res;
     }
   }
 
