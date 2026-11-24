@@ -10,8 +10,8 @@ export function summary(rows: ResponseRow[]) {
     completed: rows.filter((r) => r.submittedAt).length,
     avgSatisfaction: sats.length ? (sats.reduce((a, b) => a + b, 0) / sats.length).toFixed(1) : "–",
     satisfactionN: sats.length,
-    preferV3: pref("Portainer V3"),
-    preferCurrent: pref("Current Portainer"),
+    preferV3: pref("Portainer new UI"),
+    preferCurrent: pref("Current Portainer UI"),
     noPreference: pref("No preference"),
   };
 }

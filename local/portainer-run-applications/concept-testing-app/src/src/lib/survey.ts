@@ -3,9 +3,8 @@
 
 export const POS = ["Intuitive", "Clean", "Efficient", "Fast", "Organized", "Powerful", "Reliable", "Easy to use", "Modern", "Consistent", "Clear", "Flexible", "Polished", "Time-saving", "Trustworthy", "Approachable"];
 export const NEG = ["Cluttered", "Confusing", "Overwhelming", "Slow", "Outdated", "Complex", "Inconsistent", "Frustrating", "Hard to navigate", "Busy", "Rigid", "Tedious", "Hidden", "Too technical", "Fragmented", "Dense"];
-export const PICK_MIN = 1;
+export const PICK_MIN = 2;
 export const PICK_MAX = 3;
-export const NEG_MIN = 2;
 
 export const ROLE_OTHER = "Other (please specify)";
 export const ROLES = [
@@ -30,7 +29,11 @@ export const TASKS = [
   "Sort and filter a table", "Open your account preferences", "Switch between light and dark mode",
   "Move between sections using the sidebar", "Open a details page and its tabs", "Check the status badges and icons",
 ];
-export const PREFERENCES = ["Current Portainer", "Portainer V3", "No preference"];
+export const PREFERENCES = ["Current Portainer UI", "Portainer new UI", "No preference"];
+/** Earlier labels for the same choices, so saved answers still match. */
+const LEGACY_PREFERENCES: Record<string, string> = {
+  "Current Portainer": PREFERENCES[0], "Portainer V3": PREFERENCES[1], "Portainer-Ops V3UI": PREFERENCES[1], "Portainer-Ops new UI": PREFERENCES[1],
+};
 export const FOLLOW_UP = ["Yes, happy to chat", "No thanks"];
 export const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL"];
 export const TOOLS_MAX = 20;
@@ -40,7 +43,7 @@ export const STEPS = [
   { key: "current", title: "Current Portainer", sub: "How it feels today", mins: 3 },
   { key: "wordsBefore", title: "Pick words", sub: "Current UI", mins: 2 },
   { key: "demo", title: "Explore V3", sub: "Open the demo", mins: 10 },
-  { key: "wordsAfter", title: "Pick words", sub: "V3 UI", mins: 2 },
+  { key: "wordsAfter", title: "Pick words", sub: "Portainer UI", mins: 2 },
   { key: "final", title: "Final thoughts", sub: "Anything else", mins: 2 },
   { key: "swag", title: "Claim your hoodie", sub: "Shipping details", mins: 1 },
 ] as const;
@@ -132,7 +135,7 @@ export function sanitize(input: unknown): State {
       wordsBefore: words(a.wordsBefore),
       demoTasks: pick(a.demoTasks, TASKS), demoNotes: str(a.demoNotes),
       wordsAfter: words(a.wordsAfter),
-      preference: oneOf(a.preference, PREFERENCES), nps: intIn(a.nps, 0, 10), finalNotes: str(a.finalNotes), followUp: oneOf(a.followUp, FOLLOW_UP),
+      preference: oneOf(LEGACY_PREFERENCES[String(a.preference)] ?? a.preference, PREFERENCES), nps: intIn(a.nps, 0, 10), finalNotes: str(a.finalNotes), followUp: oneOf(a.followUp, FOLLOW_UP),
       swag: {
         name: str(sw.name, 200), email: str(sw.email, 200), company: str(sw.company, 200), address: str(sw.address, 500),
         city: str(sw.city, 200), postcode: str(sw.postcode, 40), country: str(sw.country, 200), size: oneOf(sw.size, SIZES), consent: sw.consent === true,
@@ -202,8 +205,8 @@ function validCurrent(s: State): Errors {
 /** Positive words are required; negative words are optional (some people have none). */
 function validWords(s: State, which: WordKey): Errors {
   const w = s.a[which], e: Errors = {};
-  if (w.pos.length < PICK_MIN) e[`${which}.pos`] = "Pick at least one positive word.";
-  if (w.neg.length < NEG_MIN) e[`${which}.neg`] = `Pick at least ${NEG_MIN} negative words. Even small annoyances count.`;
+  if (w.pos.length < PICK_MIN) e[`${which}.pos`] = `Pick at least ${PICK_MIN} positive words. Even small wins count.`;
+  if (w.neg.length < PICK_MIN) e[`${which}.neg`] = `Pick at least ${PICK_MIN} negative words. Even small annoyances count.`;
   for (const x of [...w.pos, ...w.neg]) if (!(w.why[x] || "").trim()) e[`${which}.why.${x}`] = "Add a short reason for this word.";
   return e;
 }

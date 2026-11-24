@@ -7,7 +7,7 @@ export default function Home() {
       <noscript>
         <main style={{ maxWidth: 640, margin: "80px auto", padding: "0 16px", textAlign: "center", fontFamily: "system-ui, sans-serif" }}>
           <h1>Help us shape Portainer&apos;s Experience</h1>
-          <p>Try Portainer V3 early and tell us what you really think. It takes 15–30 minutes, saves as you go, and every finisher gets a free Portainer Hoodie.</p>
+          <p>Try Portainer V3UI early and tell us what you really think. It takes 15–30 minutes, saves as you go, and every finisher gets a free Portainer Hoodie.</p>
           <p>Please turn on JavaScript to take part.</p>
         </main>
       </noscript>

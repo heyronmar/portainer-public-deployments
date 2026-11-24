@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  FOLLOW_UP, FREQUENCY, NEG, NEG_MIN, PICK_MAX, PICK_MIN, POS, PREFERENCES, ROLE_OTHER, ROLES, SIZES, STEPS, STEP_COUNT, TASKS, TOOL_LEN, TOOLS_MAX, USAGE,
+  FOLLOW_UP, FREQUENCY, NEG, PICK_MAX, PICK_MIN, POS, PREFERENCES, ROLE_OTHER, ROLES, SIZES, STEPS, STEP_COUNT, TASKS, TOOL_LEN, TOOLS_MAX, USAGE,
   type Answers, type Errors, type State, type Swag, type WordKey,
 } from "@/lib/survey";
 import { cn } from "@/lib/utils";
@@ -44,7 +44,7 @@ function Head({ step, title, eyebrow, children }: { step?: number; title: ReactN
             {mins > 0 && <span className="inline-flex items-center gap-1 rounded-full bg-card px-2.5 py-1 text-muted-foreground ring-1 ring-border"><Clock className="size-3.5" />About {mins} min</span>}
             {eyebrow}
           </div>
-          <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-balance sm:text-[34px]">{title}</h1>
+          <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-balance sm:text-[30px]">{title}</h1>
           {children && <p className="max-w-[56ch] text-[15px] text-muted-foreground">{children}</p>}
         </div>
         <StepArt step={step === undefined ? STEP_COUNT : step - 1} />
@@ -60,7 +60,7 @@ const Cheer = ({ children }: { children: ReactNode }) => (
 
 const ic = "size-5";
 const FREQUENCY_ICONS = { Daily: <Sun className={ic} />, Weekly: <CalendarDays className={ic} />, Monthly: <CalendarRange className={ic} />, Rarely: <Snail className={ic} /> };
-const PREFERENCE_ICONS = { "Current Portainer": <History className={ic} />, "Portainer V3": <Sparkles className={ic} />, "No preference": <ScaleIcon className={ic} /> };
+const PREFERENCE_ICONS = { "Current Portainer UI": <History className={ic} />, "Portainer new UI": <Sparkles className={ic} />, "No preference": <ScaleIcon className={ic} /> };
 const FOLLOW_UP_ICONS = { "Yes, happy to chat": <MessageCircleHeart className={ic} />, "No thanks": <Hand className={ic} /> };
 // The hoodie grows with the size.
 const SIZE_ICONS = Object.fromEntries(SIZES.map((x, i) => [x, <Hoodie key={x} style={{ width: 14 + i * 2, height: 14 + i * 2 }} />]));
@@ -104,7 +104,7 @@ export function StepCurrent(p: StepProps) {
   const focusOther = useRef(false);
   return (
     <>
-      <Head step={1} title="How does Portainer feel today?" eyebrow={<Cheer>Nice to meet you!</Cheer>}>
+      <Head step={1} title="How does the current Portainer UI feel today?" eyebrow={<Cheer>Nice to meet you!</Cheer>}>
         Let&apos;s start with the Portainer you use today. There are no wrong answers, just your honest take.
       </Head>
       <Panel>
@@ -188,9 +188,9 @@ export function StepWords({ which, ...p }: StepProps & { which: WordKey }) {
             <span className="font-mono">{picked.length}/{PICK_MAX} picked</span>
           </span>
         </div>
-        {kind === "neg" && (
-          <p className="-mt-1 text-[13px] text-muted-foreground">Pick at least {NEG_MIN}. Every tool has rough edges, and knowing yours helps us the most.</p>
-        )}
+        <p className="-mt-1 text-[13px] text-muted-foreground">
+          Pick at least {PICK_MIN}. {kind === "pos" ? "Think about what works well for you, big or small." : "Every tool has rough edges, and knowing yours helps us the most."}
+        </p>
         <div role="group" aria-labelledby={`${key}-label`} className="flex flex-wrap gap-2.5">
           {list.map((x) => {
             const on = picked.includes(x);
@@ -204,8 +204,8 @@ export function StepWords({ which, ...p }: StepProps & { which: WordKey }) {
   const all = [...w.pos.map((x) => ["pos", x] as const), ...w.neg.map((x) => ["neg", x] as const)];
   return (
     <>
-      <Head step={before ? 2 : 4} title={before ? "Describe the current Portainer UI" : "Now describe the V3 UI"} eyebrow={<Cheer>{before ? "Quick one" : "Before vs after"}</Cheer>}>
-        Pick {PICK_MIN}–{PICK_MAX} positive words and {NEG_MIN}–{PICK_MAX} negative words that best describe {before ? "your experience with Portainer today" : "what you saw in the V3 demo"}. Then tell us why you picked each one.
+      <Head step={before ? 2 : 4} title={before ? "Describe the current Portainer UI" : "Now describe the new UI"} eyebrow={<Cheer>{before ? "Quick one" : "Before vs after"}</Cheer>}>
+        Pick {PICK_MIN}–{PICK_MAX} positive words and {PICK_MIN}–{PICK_MAX} negative words that best describe {before ? "your experience with Portainer today" : "what you saw in the V3 demo"}. Then tell us why you picked each one.
       </Head>
       <Panel>{group("pos", POS)}{group("neg", NEG)}</Panel>
       {all.length > 0 && (
@@ -240,7 +240,7 @@ export function StepDemo(p: StepProps) {
   const { s, set, errors: e, demoUrl, demoLogin } = p, a = s.a;
   return (
     <>
-      <Head step={3} title="Take Portainer V3 for a spin" eyebrow={<Cheer>The fun part</Cheer>}>
+      <Head step={3} title="Take Portainer new UI for a spin" eyebrow={<Cheer>The fun part</Cheer>}>
         Open the demo, look around, and see how the new UI compares to the Portainer you use today.
       </Head>
       <div data-field="openedDemo" className="flex flex-col gap-2">
@@ -248,7 +248,7 @@ export function StepDemo(p: StepProps) {
           <BrowserArt opened={s.openedDemo} />
           <div className="flex min-w-0 flex-col items-start gap-3">
             <div className="flex min-w-0 flex-col gap-1">
-              <b className="text-lg">Portainer V3 demo<span className="text-neg"> *</span></b>
+              <b className="text-lg">Portainer new UI demo<span className="text-neg"> *</span></b>
               <code className="font-mono text-[12.5px] break-all text-muted-foreground">{demoUrl.replace(/^https?:\/\//, "")}</code>
               {s.openedDemo && <span className="text-[13px] text-pos">Opened. Switch back to that tab any time.</span>}
             </div>
@@ -311,7 +311,7 @@ export function StepFinal(p: StepProps) {
         <Field name="preference" label="Which would you rather use day to day?" required error={e.preference}>
           <Chips name="preference" options={PREFERENCES} icons={PREFERENCE_ICONS} cols="grid-cols-3 sm:grid-cols-3" value={a.preference} invalid={!!e.preference} onChange={(v) => set((d) => { d.a.preference = v; }, true)} />
         </Field>
-        <Field name="nps" label="How likely are you to recommend Portainer V3 to a colleague?" required error={e.nps}>
+        <Field name="nps" label="How likely are you to recommend Portainer V3UI to a colleague?" required error={e.nps}>
           <Scale name="nps" from={0} to={10} value={a.nps} lo="Not at all likely" hi="Extremely likely" invalid={!!e.nps} tone={npsTone}
             onChange={(v) => set((d) => { d.a.nps = v; }, true)} />
           {a.nps !== null && (
@@ -394,7 +394,7 @@ export function StepDone({ s }: StepProps) {
       <div className="relative">
         <Confetti />
         <Head title={`Thank you${first ? `, ${first}` : ""}`} eyebrow={<Badge className="bg-pos text-white dark:text-background">Session complete</Badge>}>
-          Your feedback is in and so is your hoodie request. You&apos;ve helped shape what Portainer V3 becomes. The study closes on 18 December, and we&apos;ll start shipping hoodies after that. Until then, you can go back to any step to review or change an answer.
+          Your feedback is in and so is your hoodie request. You&apos;ve helped shape what Portainer V3UI becomes. The study closes on 18 December, and we&apos;ll start shipping hoodies after that. Until then, you can go back to any step to review or change an answer.
         </Head>
       </div>
       <Panel>

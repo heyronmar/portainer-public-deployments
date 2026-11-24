@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 const title = "Help us shape Portainer's Experience";
 const description =
-  "Try Portainer V3 early and tell us what you really think. It takes 15–30 minutes, saves as you go, and every finisher gets a free Portainer Hoodie.";
+  "Try Portainer V3UI early and tell us what you really think. It takes 15–30 minutes, saves as you go, and every finisher gets a free Portainer Hoodie.";
 
 // Link previews (Slack, LinkedIn, X, iMessage…) use these. The share image is opengraph-image.png / twitter-image.png.
 export async function generateMetadata(): Promise<Metadata> {
@@ -25,10 +25,10 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(await siteUrl()),
     title,
     description,
-    applicationName: "Portainer V3 Concept Test",
+    applicationName: "Portainer V3UI Concept Test",
     keywords: [
       "Portainer",
-      "Portainer V3",
+      "Portainer V3UI",
       "user research",
       "concept test",
       "Kubernetes",

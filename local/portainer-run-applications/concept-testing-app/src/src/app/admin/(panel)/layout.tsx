@@ -4,7 +4,7 @@ import { Download, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { signOut } from "../actions";
 
-export const metadata: Metadata = { title: "Responses · Portainer V3 Concept Test", robots: { index: false } };
+export const metadata: Metadata = { title: "Responses · Portainer V3UI Concept Test", robots: { index: false } };
 
 export default function AdminLayout({ children }: LayoutProps<"/admin">) {
   return (
@@ -14,7 +14,7 @@ export default function AdminLayout({ children }: LayoutProps<"/admin">) {
           <Link href="/admin" className="flex items-center gap-2.5">
             <div aria-hidden className="grid size-7 place-items-center rounded-md bg-brand text-[13px] font-bold text-brand-foreground">P</div>
             <div className="leading-tight">
-              <b className="block text-sm">Portainer V3 concept test</b>
+              <b className="block text-sm">Portainer V3UI concept test</b>
               <span className="text-xs text-muted-foreground">Researcher view</span>
             </div>
           </Link>

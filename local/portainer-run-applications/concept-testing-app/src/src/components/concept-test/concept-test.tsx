@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { Check, Clock, Compass, Copy, Gift, Loader2, MessageSquareText, PartyPopper, Save } from "lucide-react";
+import { Check, Compass, Copy, Gift, Loader2, MessageSquareText, PartyPopper, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -208,7 +208,7 @@ export function ConceptTest() {
     <div className="grid min-h-dvh grid-cols-[minmax(0,1fr)] md:grid-cols-[280px_minmax(0,1fr)]">
       <Sidebar s={s} id={session.id} status={status} onGo={goTo} />
       <main className="min-w-0 px-4 pt-7 pb-12 md:pt-10 md:pb-16">
-        <div key={step} className="mx-auto flex max-w-[760px] flex-col gap-6">
+        <div key={step} className="mx-auto flex max-w-[900px] flex-col gap-6">
           {notice && <p role="status" className="rounded-lg border border-border bg-muted px-4 py-3 text-[13px]">{notice}</p>}
           {cheered === step - 1 && (
             <p role="status" className="flex items-center gap-2.5 self-start rounded-full bg-pos-soft py-2 pr-4 pl-2.5 text-[14px] font-medium text-pos motion-safe:animate-pop">
@@ -245,7 +245,7 @@ export function ConceptTest() {
 
 const INTRO_STEPS = [
   { icon: MessageSquareText, text: "Tell us how Portainer feels today" },
-  { icon: Compass, text: "Take the V3 demo for a spin" },
+  { icon: Compass, text: "Take the new UI demo for a spin" },
   { icon: Gift, text: "Claim your free hoodie" },
 ];
 
@@ -260,7 +260,7 @@ function Intro({ email, error, notice, checking, onChange, onBlur, onContinue }:
         <div className="flex max-w-[calc(100vw-2rem)] flex-col gap-3 sm:w-[640px]">
           <h1 className="text-[30px] leading-tight font-semibold tracking-tight text-balance sm:text-[34px] sm:whitespace-nowrap">Help us shape Portainer&apos;s Experience</h1>
           <p className="text-[16px] text-muted-foreground text-pretty">
-            Be one of the first to try Portainer V3 and tell us what you really think. As a thank-you, we&apos;ll send you a Portainer Hoodie.
+            Be one of the first to try Portainer new UI and tell us what you really think. As a thank-you, we&apos;ll send you a Portainer Hoodie.
           </p>
         </div>
         <ol className="grid w-full max-w-[calc(100vw-2rem)] gap-2 sm:w-[680px] sm:grid-cols-3">
@@ -285,7 +285,6 @@ function Intro({ email, error, notice, checking, onChange, onBlur, onContinue }:
           {checking ? <><Loader2 className="size-4 animate-spin" />Checking…</> : <>Let&apos;s start →</>}
         </Button>
         <p className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[13px] text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5"><Clock className="size-3.5" />15–30 minutes</span>
           <span className="inline-flex items-center gap-1.5"><Save className="size-3.5" />Pause any time: we save as you go</span>
         </p>
       </form>
@@ -300,7 +299,7 @@ function Sidebar({ s, id, status, onGo }: { s: State; id: string; status: SaveSt
       <div className="flex items-center gap-2.5">
         <Image src="/logo/portainer.svg" alt="" width={32} height={32} unoptimized className="size-8" />
         <div className="leading-tight">
-          <b className="block text-sm">Portainer V3</b>
+          <b className="block text-sm">Portainer UI Test</b>
           <span className="text-xs text-muted-foreground">Concept test · self-paced</span>
         </div>
       </div>
