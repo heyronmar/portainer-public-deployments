@@ -42,7 +42,7 @@ export const TOOL_LEN = 40;
 export const STEPS = [
   { key: "current", title: "Current Portainer", sub: "How it feels today", mins: 3 },
   { key: "wordsBefore", title: "Pick words", sub: "Current UI", mins: 2 },
-  { key: "demo", title: "Explore V3", sub: "Open the demo", mins: 10 },
+  { key: "demo", title: "Explore the new UI", sub: "Open the demo", mins: 10 },
   { key: "wordsAfter", title: "Pick words", sub: "Portainer UI", mins: 2 },
   { key: "final", title: "Final thoughts", sub: "Anything else", mins: 2 },
   { key: "swag", title: "Claim your hoodie", sub: "Shipping details", mins: 1 },

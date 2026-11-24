@@ -1,5 +1,5 @@
 "use client";
-// Current UI vs V3 side by side: an overall verdict, a negative/positive split bar, and the words people picked.
+// Current UI vs new UI side by side: an overall verdict, a negative/positive split bar, and the words people picked.
 // Clicking a word opens a pop-up with everyone's comments about it.
 import { useState } from "react";
 import Link from "next/link";
@@ -26,8 +26,8 @@ function verdict(pos: number, neg: number) {
 export function SentimentCards({ current, v3 }: { current: Sentiment; v3: Sentiment }) {
   const [open, setOpen] = useState<{ side: Side; word: SentimentWord } | null>(null);
   const sides: Side[] = [
-    { key: "current", title: "Current UI", about: "The Portainer UI people use today", otherTitle: "V3 UI", data: current },
-    { key: "v3", title: "V3 UI", about: "The new design people tried in the demo", otherTitle: "Current UI", data: v3 },
+    { key: "current", title: "Current UI", about: "The Portainer UI people use today", otherTitle: "New UI", data: current },
+    { key: "v3", title: "New UI", about: "The new design people tried in the demo", otherTitle: "Current UI", data: v3 },
   ];
   return (
     <>
@@ -74,7 +74,7 @@ function SideCard({ side, onWord }: { side: Side; onWord: (w: SentimentWord) => 
   );
 }
 
-/** The UI a card or pop-up is about. Grey for the current UI, Portainer blue for V3, so they're never mixed up. */
+/** The UI a card or pop-up is about. Grey for the current UI, Portainer blue for the new UI, so they're never mixed up. */
 function SideBadge({ side, small }: { side: Side; small?: boolean }) {
   return (
     <span className={`w-fit rounded-md font-semibold tracking-tight ${small ? "px-1.5 py-0.5 text-[12px]" : "px-2.5 py-1 text-[17px]"} ${

@@ -20,7 +20,7 @@ export function SignInForm() {
       <Image src="/logo/portainer.svg" alt="Portainer" width={56} height={56} unoptimized priority className="size-14" />
       <div className="flex flex-col gap-3">
         <h1 className="text-[30px] leading-tight font-semibold tracking-tight text-balance sm:text-[34px]">Researcher sign in</h1>
-        <p className="text-[16px] text-muted-foreground text-pretty">See the responses and feedback from the Portainer V3UI concept test.</p>
+        <p className="text-[16px] text-muted-foreground text-pretty">See the responses and feedback from the Portainer UI concept test.</p>
       </div>
       <Suspense><NextPath /></Suspense>
       <div className="flex w-full flex-col gap-4 text-left">

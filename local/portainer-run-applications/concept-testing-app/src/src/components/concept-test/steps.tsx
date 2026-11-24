@@ -205,7 +205,7 @@ export function StepWords({ which, ...p }: StepProps & { which: WordKey }) {
   return (
     <>
       <Head step={before ? 2 : 4} title={before ? "Describe the current Portainer UI" : "Now describe the new Portainer UI"} eyebrow={<Cheer>{before ? "Quick one" : "Before vs after"}</Cheer>}>
-        Pick {PICK_MIN}–{PICK_MAX} positive words and {PICK_MIN}–{PICK_MAX} negative words that best describe {before ? "your experience with Portainer today" : "what you saw in the V3 demo"}. Then tell us why you picked each one.
+        Pick {PICK_MIN}–{PICK_MAX} positive words and {PICK_MIN}–{PICK_MAX} negative words that best describe {before ? "your experience with Portainer today" : "what you saw in the new Portainer UI demo"}. Then tell us why you picked each one.
       </Head>
       <Panel>{group("pos", POS)}{group("neg", NEG)}</Panel>
       {all.length > 0 && (
@@ -234,7 +234,7 @@ export function StepWords({ which, ...p }: StepProps & { which: WordKey }) {
   );
 }
 
-/* ---------- 3. Explore V3 ---------- */
+/* ---------- 3. Explore the new UI ---------- */
 
 export function StepDemo(p: StepProps) {
   const { s, set, errors: e, demoUrl, demoLogin } = p, a = s.a;
@@ -306,12 +306,12 @@ export function StepFinal(p: StepProps) {
   const { s, set, errors: e } = p, a = s.a;
   return (
     <>
-      <Head step={5} title="Final thoughts" eyebrow={<Cheer>Almost there</Cheer>}>A few last questions comparing what you use today with V3.</Head>
+      <Head step={5} title="Final thoughts" eyebrow={<Cheer>Almost there</Cheer>}>A few last questions comparing what you use today with the new Portainer UI.</Head>
       <Panel>
         <Field name="preference" label="Which would you rather use day to day?" required error={e.preference}>
           <Chips name="preference" options={PREFERENCES} icons={PREFERENCE_ICONS} cols="grid-cols-3 sm:grid-cols-3" value={a.preference} invalid={!!e.preference} onChange={(v) => set((d) => { d.a.preference = v; }, true)} />
         </Field>
-        <Field name="nps" label="How likely are you to recommend Portainer V3UI to a colleague?" required error={e.nps}>
+        <Field name="nps" label="How likely are you to recommend the new Portainer UI to a colleague?" required error={e.nps}>
           <Scale name="nps" from={0} to={10} value={a.nps} lo="Not at all likely" hi="Extremely likely" invalid={!!e.nps} tone={npsTone}
             onChange={(v) => set((d) => { d.a.nps = v; }, true)} />
           {a.nps !== null && (
@@ -323,7 +323,7 @@ export function StepFinal(p: StepProps) {
       </Panel>
       <Panel>
         <Field name="finalNotes" htmlFor="finalNotes" label="Is there anything else you'd like the team to know?">
-          <TextArea {...p} id="finalNotes" k="finalNotes" placeholder="What should we keep, change, or add before V3 ships?" />
+          <TextArea {...p} id="finalNotes" k="finalNotes" placeholder="What should we keep, change, or add before the new UI ships?" />
         </Field>
         <Field name="followUp" label="Can we follow up with you about your answers?">
           <Chips name="followUp" options={FOLLOW_UP} icons={FOLLOW_UP_ICONS} cols="sm:grid-cols-2" value={a.followUp} onChange={(v) => set((d) => { d.a.followUp = v; }, true)} />
@@ -394,14 +394,14 @@ export function StepDone({ s }: StepProps) {
       <div className="relative">
         <Confetti />
         <Head title={`Thank you${first ? `, ${first}` : ""}`} eyebrow={<Badge className="bg-pos text-white dark:text-background">Session complete</Badge>}>
-          Your feedback is in and so is your hoodie request. You&apos;ve helped shape what Portainer V3UI becomes. The study closes on 18 December, and we&apos;ll start shipping hoodies after that. Until then, you can go back to any step to review or change an answer.
+          Your feedback is in and so is your hoodie request. You&apos;ve helped shape what the new Portainer UI becomes. The study closes on 18 December, and we&apos;ll start shipping hoodies after that. Until then, you can go back to any step to review or change an answer.
         </Head>
       </div>
       <Panel>
         <span className="text-[15px] font-semibold">What you told us</span>
         <div className="grid gap-4 sm:grid-cols-2">
           <div><span className="text-[13px] text-muted-foreground">Current UI</span>{tags("wordsBefore")}</div>
-          <div><span className="text-[13px] text-muted-foreground">V3 UI</span>{tags("wordsAfter")}</div>
+          <div><span className="text-[13px] text-muted-foreground">New Portainer UI</span>{tags("wordsAfter")}</div>
         </div>
       </Panel>
     </>

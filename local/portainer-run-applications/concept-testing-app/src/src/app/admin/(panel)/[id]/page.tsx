@@ -49,15 +49,15 @@ async function Participant({ params }: { params: PageProps<"/admin/[id]">["param
 
       <Section title="2. Words: current UI"><Words w={a.wordsBefore} /></Section>
 
-      <Section title="3. Explore V3">
+      <Section title="3. Explore the new UI">
         <Pairs items={[["Opened demo", r.state.openedDemo ? "Yes" : "No"], ["Tried", a.demoTasks.join(", ")]]} />
         <Long label="Notes" text={a.demoNotes} />
       </Section>
 
-      <Section title="4. Words: V3 UI"><Words w={a.wordsAfter} /></Section>
+      <Section title="4. Words: new UI"><Words w={a.wordsAfter} /></Section>
 
       <Section title="5. Final thoughts">
-        <Pairs items={[["Prefers", a.preference], ["Recommend V3 (0–10)", a.nps], ["OK to follow up", a.followUp]]} />
+        <Pairs items={[["Prefers", a.preference], ["Recommend new UI (0–10)", a.nps], ["OK to follow up", a.followUp]]} />
         <Long label="Anything else" text={a.finalNotes} />
       </Section>
 

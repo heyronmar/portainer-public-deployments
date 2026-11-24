@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { SignInForm } from "./sign-in-form";
 
-export const metadata: Metadata = { title: "Researcher sign in · Portainer V3UI Concept Test", robots: { index: false } };
+export const metadata: Metadata = { title: "Researcher sign in · Portainer UI Concept Test", robots: { index: false } };
 
 export default function AdminLoginPage() {
   return (

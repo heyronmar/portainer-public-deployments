@@ -66,7 +66,7 @@ export function SwagArt() {
           <Image src="/logo/portainer.svg" alt="" width={36} height={36} unoptimized className="absolute top-[47%] left-1/2 size-8 -translate-x-1/2 rounded-md sm:size-9" />
         </div>
       </div>
-      <div className="absolute top-3 left-1 grid size-14 -rotate-12 place-items-center rounded-full bg-card font-mono text-lg font-bold text-brand shadow-md ring-2 ring-brand/30 motion-safe:animate-float motion-safe:[animation-delay:-1.5s]">V3</div>
+      <div className="absolute top-3 left-1 grid size-14 -rotate-12 place-items-center rounded-full bg-card font-mono text-lg font-bold text-brand shadow-md ring-2 ring-brand/30 motion-safe:animate-float motion-safe:[animation-delay:-1.5s]">New</div>
       <div className="absolute top-2 right-0 rotate-12 rounded-full bg-pos px-3 py-1.5 text-sm font-bold text-white shadow-md dark:text-background">Free!</div>
       <div className="absolute right-1 bottom-6 grid size-12 rotate-6 place-items-center rounded-2xl bg-warn text-white shadow-md motion-safe:animate-float motion-safe:[animation-delay:-3s] dark:text-background">
         <Gift className="size-6" />

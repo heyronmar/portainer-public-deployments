@@ -35,7 +35,7 @@ async function Dashboard() {
         <Stat value={s.started} label="Started" />
         <Stat value={s.completed} label="Completed" />
         <Stat value={s.avgSatisfaction} label={`Avg satisfaction today (1–5, n=${s.satisfactionN})`} />
-        <Stat value={`${s.preferV3} / ${s.preferCurrent}`} label={`Prefer V3 / current (${s.noPreference} no preference)`} />
+        <Stat value={`${s.preferV3} / ${s.preferCurrent}`} label={`Prefer new UI / current (${s.noPreference} no preference)`} />
       </div>
       <SentimentCards current={sentiment(rows, "wordsBefore")} v3={sentiment(rows, "wordsAfter")} />
       <Card className="gap-0 rounded-lg py-0">
