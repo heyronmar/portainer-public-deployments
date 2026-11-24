@@ -204,7 +204,7 @@ export function StepWords({ which, ...p }: StepProps & { which: WordKey }) {
   const all = [...w.pos.map((x) => ["pos", x] as const), ...w.neg.map((x) => ["neg", x] as const)];
   return (
     <>
-      <Head step={before ? 2 : 4} title={before ? "Describe the current Portainer UI" : "Now describe the new UI"} eyebrow={<Cheer>{before ? "Quick one" : "Before vs after"}</Cheer>}>
+      <Head step={before ? 2 : 4} title={before ? "Describe the current Portainer UI" : "Now describe the new Portainer UI"} eyebrow={<Cheer>{before ? "Quick one" : "Before vs after"}</Cheer>}>
         Pick {PICK_MIN}–{PICK_MAX} positive words and {PICK_MIN}–{PICK_MAX} negative words that best describe {before ? "your experience with Portainer today" : "what you saw in the V3 demo"}. Then tell us why you picked each one.
       </Head>
       <Panel>{group("pos", POS)}{group("neg", NEG)}</Panel>
