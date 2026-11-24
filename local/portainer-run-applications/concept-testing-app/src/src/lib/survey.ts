@@ -177,12 +177,23 @@ export function emailProblem(raw: string): string | null {
   if (!email) return "Enter your email address.";
   if (!EMAIL.test(email)) return "That email address doesn't look right. Check for typos.";
   const [local, domain] = [email.slice(0, email.lastIndexOf("@")), email.slice(email.lastIndexOf("@") + 1)];
+  if (local.includes("+")) return "Please use your email address without a + alias, for example name@company.com.";
   const tld = domain.slice(domain.lastIndexOf(".") + 1);
   if (DUMMY_DOMAINS.has(domain) || [...DUMMY_DOMAINS].some((d) => domain.endsWith(`.${d}`)) || DUMMY_TLDS.includes(tld))
     return "That looks like a test or throwaway email domain. Please use your real email so we can send your hoodie.";
   if (DUMMY_LOCAL.test(local.replace(/[._+]/g, "")))
     return "That looks like a placeholder address. Please use your real email so we can send your hoodie.";
   return null;
+}
+
+/** One key per mailbox (case, +tags and Gmail dots ignored), for the one-response-per-email check. */
+export function emailKey(raw: string): string {
+  const email = raw.trim().toLowerCase(), at = email.lastIndexOf("@");
+  if (at < 0) return email;
+  let local = email.slice(0, at).split("+")[0], domain = email.slice(at + 1);
+  if (domain === "googlemail.com") domain = "gmail.com";
+  if (domain === "gmail.com") local = local.replace(/\./g, "");
+  return `${local}@${domain}`;
 }
 
 /** The intro asks for an email first. It is stored as the swag email, so step 6 starts prefilled. */

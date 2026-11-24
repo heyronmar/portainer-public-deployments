@@ -3,7 +3,7 @@ import Database from "better-sqlite3";
 import { randomBytes } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import { blank, sanitize, type State } from "./survey";
+import { blank, emailKey, sanitize, type State } from "./survey";
 
 export type ResponseRow = { id: string; state: State; step: number; submittedAt: string | null; createdAt: string; updatedAt: string };
 type RawRow = { id: string; data: string; step: number; submitted_at: string | null; created_at: string; updated_at: string };
@@ -63,6 +63,15 @@ export function saveResponse(id: string, state: State): ResponseRow {
 export function deleteResponse(id: string): boolean {
   if (!isValidId(id)) return false;
   return db().prepare("DELETE FROM responses WHERE id = ?").run(id).changes > 0;
+}
+
+/** Whether a different response already uses this mailbox (see emailKey), so one email can't start the study twice. */
+export function emailTaken(email: string, exceptId: string, { submittedOnly = false } = {}): boolean {
+  const key = emailKey(email);
+  if (!key) return false;
+  const rows = db().prepare(`SELECT json_extract(data, '$.a.swag.email') AS email FROM responses WHERE id != ?${submittedOnly ? " AND submitted_at IS NOT NULL" : ""}`)
+    .all(exceptId) as { email: unknown }[];
+  return rows.some((r) => typeof r.email === "string" && emailKey(r.email) === key);
 }
 
 export function listResponses(): ResponseRow[] {
